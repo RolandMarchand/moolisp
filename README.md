@@ -15,14 +15,18 @@ To build and run Moolisp, you will need:
 To build Moolisp, run the following command:
 
 ```bash
-mkdir build
-cmake -S . -B build
+git clone --recurse-submodules git@github.com:RolandMarchand/moolisp.git &&
+cd moolisp &&
+mkdir build &&
+cmake -S . -B build &&
+cd build &&
+make
 ```
 
 This will compile the `moolisp` executable. You can then run Moolisp with:
 
 ```bash
-./build/moolisp
+./moolisp
 ```
 
 ### Using Moolisp

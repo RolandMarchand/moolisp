@@ -16,4 +16,3 @@ target_link_libraries(structures PRIVATE tgc)
 
 add_executable("${PROJECT_NAME}" lisp.c)
 target_link_libraries("${PROJECT_NAME}" PRIVATE lexer tgc)
-
