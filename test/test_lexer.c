@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "lisp.h"
+#include "common.h"
 
 int main() {
 	const char* str = "(define (factorial n)\
@@ -663,10 +664,8 @@ int main() {
 	};
 	YY_BUFFER_STATE buffer = yy_scan_string(str);
 	for (int token = yylex(), i = 0; token != TOKEN_EOF; token = yylex(), i++) {
-		if (tokens[i] != token || strcmp(lexemes[i], yytext) != 0) {
-			return 1;
-		}
+		assert(tokens[i] == token);
+		assert(strcmp(lexemes[i], yytext) == 0);
 	}
 	yy_delete_buffer(buffer);
-	return 0;
 }

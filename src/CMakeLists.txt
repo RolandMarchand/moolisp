@@ -11,7 +11,7 @@ target_compile_options(lexer PRIVATE -Wno-unused-function)
 add_library(tgc tgc/tgc.c)
 target_compile_options(tgc PRIVATE -Wno-use-after-free)
 
-add_library(structures hashmap.c)
+add_library(structures hashmap.c linked_list.c)
 target_link_libraries(structures PRIVATE tgc)
 
 add_executable("${PROJECT_NAME}" lisp.c)

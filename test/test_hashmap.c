@@ -1,4 +1,4 @@
-#include <assert.h>
+#include "common.h"
 #include "hashmap.h"
 
 tgc_t gc;
