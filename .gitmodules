@@ -1,0 +1,3 @@
+[submodule "tgc"]
+	path = src/tgc
+	url = git@github.com:orangeduck/tgc.git

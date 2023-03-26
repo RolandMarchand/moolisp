@@ -4,4 +4,4 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "gc.h"
+#include "tgc/tgc.h"

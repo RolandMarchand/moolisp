@@ -12,6 +12,11 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-Wall -Wextra)
 endif()
 
+include_directories(
+  "${CMAKE_SOURCE_DIR}/src"
+  "${CMAKE_BINARY_DIR}/src"
+)
+
 enable_testing()
 add_subdirectory(src)
 add_subdirectory(test EXCLUDE_FROM_ALL)
