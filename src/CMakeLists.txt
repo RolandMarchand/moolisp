@@ -6,11 +6,14 @@ add_custom_command(
 )
 
 add_library(lexer lexer.c)
-target_compile_options(lexer PUBLIC -Wno-unused-function)
+target_compile_options(lexer PRIVATE -Wno-unused-function)
 
 add_library(tgc tgc/tgc.c)
-target_compile_options(lexer PUBLIC -Wno-free-nonheap-object)
+target_compile_options(tgc PRIVATE -Wno-use-after-free)
+
+add_library(structures hashmap.c)
+target_link_libraries(structures PRIVATE tgc)
 
 add_executable("${PROJECT_NAME}" lisp.c)
-target_link_libraries("${PROJECT_NAME}" PUBLIC lexer tgc)
+target_link_libraries("${PROJECT_NAME}" PRIVATE lexer tgc)
 
