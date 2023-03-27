@@ -1,5 +1,5 @@
 %{
-#include "lisp.h"
+#include "token.h"
 %}
 
 %option noyywrap

@@ -8,11 +8,13 @@ add_custom_command(
 add_library(lexer lexer.c)
 target_compile_options(lexer PRIVATE -Wno-unused-function)
 
-add_library(tgc tgc/tgc.c)
-target_compile_options(tgc PRIVATE -Wno-use-after-free)
-
-add_library(structures hashmap.c linked_list.c)
+add_library(structures hashmap.c linked_list.c var.c)
 target_link_libraries(structures PRIVATE tgc)
 
-add_executable("${PROJECT_NAME}" lisp.c)
-target_link_libraries("${PROJECT_NAME}" PRIVATE lexer tgc)
+find_package(Readline REQUIRED)
+
+add_library(repl repl.c)
+target_link_libraries(repl PRIVATE ${Readline_LIBRARY})
+
+add_executable("${PROJECT_NAME}" main.c)
+target_link_libraries("${PROJECT_NAME}" PRIVATE lexer tgc structures repl)

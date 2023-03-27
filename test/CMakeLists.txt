@@ -8,7 +8,7 @@ add_executable(test_hashmap test_hashmap.c)
 target_link_libraries(test_hashmap PRIVATE structures tgc)
 
 add_executable(test_linked_list test_linked_list.c)
-target_link_libraries(test_linked_list PRIVATE structures tgc)
+target_link_libraries(test_linked_list PUBLIC structures tgc)
 
 add_test(Lexer test_lexer)
 add_test(Hashmap test_hashmap)

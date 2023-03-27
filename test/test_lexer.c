@@ -1,6 +1,6 @@
 #include "lexer.h"
-#include "lisp.h"
 #include "common.h"
+#include "token.h"
 
 int main() {
 	const char* str = "(define (factorial n)\

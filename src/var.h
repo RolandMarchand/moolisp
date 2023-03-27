@@ -1,14 +1,6 @@
-#include "common.h"
+#pragma once
 
-typedef enum {
-	TOKEN_EOF = 0,
-	TOKEN_INT,
-	TOKEN_STRING,
-	TOKEN_SYMBOL,
-	TOKEN_QUOTE,
-	TOKEN_LPAREN,
-	TOKEN_RPAREN
-} Token;
+#include "common.h"
 
 typedef enum {
 	VAR_NIL = 0,
@@ -50,6 +42,3 @@ struct var cdr(struct var list);
 bool atom(struct var v);
 bool eq(struct var a, struct var b);
 bool nil(struct var v);
-struct var eval(struct var expr);
-struct var progn(struct var list);
-struct var unless(struct var test, struct var then, struct var otherwise);

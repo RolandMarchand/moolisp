@@ -1,9 +1,4 @@
-#include "lisp.h"
-#include "lexer.h"
-
-int main()
-{
-}
+#include "var.h"
 
 struct var lambda(size_t param_cnt, char **param_names, struct var body)
 {
@@ -99,29 +94,4 @@ bool eq(struct var a, struct var b)
 bool nil(struct var v)
 {
 	return v.type == VAR_NIL;
-}
-
-struct var eval(struct var expr)
-{
-  
-}
-
-struct var progn(struct var list)
-{
-	assert(list.type == VAR_CONS);
-	struct var ret;
-	do {
-		ret = eval(list.cons->x);
-		list = list.cons->y;
-	} while (!nil(list));
-	return ret;
-}
-
-struct var unless(struct var test, struct var then, struct var otherwise)
-{
-	if (nil(test)) {
-		return progn(then);
-	} else {
-		return progn(otherwise);
-	}
 }
