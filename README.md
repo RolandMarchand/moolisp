@@ -9,6 +9,7 @@ To build and run Moolisp, you will need:
 
 * A C compiler
 * CMake
+* GNU Readline
 
 ### Building Moolisp
 
