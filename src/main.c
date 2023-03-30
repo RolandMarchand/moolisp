@@ -1,13 +1,18 @@
 #include "lexer.h"
+#include "repl.h"
 #include "common.h"
 #include "var.h"
+#include "context.h"
+
+tgc_t gc;
 
 struct var eval(struct var expr);
 struct var progn(struct var list);
 struct var unless(struct var test, struct var then, struct var otherwise);
 
-int main()
+int main(int argc, char **argv)
 {
+
 }
 
 struct var eval(struct var expr)

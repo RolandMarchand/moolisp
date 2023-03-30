@@ -4,6 +4,9 @@ target_link_libraries(lexer PUBLIC tgc)
 add_library(structures hashmap.c linked_list.c var.c)
 target_link_libraries(structures PUBLIC tgc)
 
+add_library(context context.c)
+target_link_libraries(context PUBLIC tgc)
+
 find_package(Readline REQUIRED)
 
 add_library(repl repl.c)
