@@ -7,10 +7,16 @@ char *str_key(void *data) {
 	return (char *)data;
 }
 
-int main() {
+void _main(void);
+
+int main(void) {
 	volatile void *dummy;
 	tgc_start(&gc, &dummy);
+	_main();
+	tgc_stop(&gc);
+}
 
+void _main(void) {
 	char *apple = "Apple";
 	struct node *list1 = list_make(apple);
 	assert(list_first(list1) == apple);
@@ -55,6 +61,4 @@ int main() {
 
 	int64_t index = list_findf(list1, "Peach", str_key);
 	assert(index == 4);
-
-	tgc_stop(&gc);
 }

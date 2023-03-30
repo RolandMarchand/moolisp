@@ -3,11 +3,19 @@
 
 tgc_t gc;
 
+void _main(void);
+
 int main(void)
 {
 	volatile void *dummy;
 	tgc_start(&gc, &dummy);
+	_main();
+	tgc_stop(&gc);
 
+}
+
+void _main(void)
+{
 	struct hashmap hm = hashmap_init(4);
 	struct var a, b, c, d, e, f, s;
 
@@ -37,6 +45,4 @@ int main(void)
 	assert(hashmap_get(&hm, "3") == &d);
 	assert(hashmap_get(&hm, "4") == NULL);
 	assert(hashmap_get(&hm, "5") == NULL);
-
-	tgc_stop(&gc);
 }

@@ -3,11 +3,18 @@
 
 tgc_t gc;
 
-int main()
+void _main(void);
+
+int main(void)
 {
 	volatile void *dummy;
 	tgc_start(&gc, &dummy);
+	_main();
+	tgc_stop(&gc);
+}
 
+void _main(void)
+{
 	struct lexer lexer;
 	lexer_init(&lexer, "50", 0);
 	lexer_scan(&lexer);
@@ -723,5 +730,4 @@ int main()
 		assert(lexer.current_token.type == tokens[i]);
 		assert(strcmp(lexer.current_token.lexeme, lexemes[i]) == 0);
 	}
-	tgc_stop(&gc);
 }
