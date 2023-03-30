@@ -12,9 +12,12 @@ typedef enum {
 } Token;
 
 struct lexer {
-	char *input;
-	char *input_ptr;
-	size_t input_length;
+	struct {
+		char *data;
+		char *ptr;
+		size_t length;
+		size_t line;
+	} input;
 	struct {
 		char *lexeme;
 		Token type;

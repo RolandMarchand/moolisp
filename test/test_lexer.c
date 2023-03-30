@@ -1,9 +1,62 @@
-#include "lexer.h"
 #include "common.h"
-#include "token.h"
+#include "lexer.h"
 
-int main() {
-	const char* str = "(define (factorial n)\
+tgc_t gc;
+
+int main()
+{
+	volatile void *dummy;
+	tgc_start(&gc, &dummy);
+
+	struct lexer lexer;
+	lexer_init(&lexer, "50", 0);
+	lexer_scan(&lexer);
+	assert(strcmp(lexer.current_token.lexeme, "50") == 0);
+	assert(lexer.current_token.type == TOKEN_FIXNUM);
+
+	lexer_init(&lexer, "   19.271", 0);
+	lexer_scan(&lexer);
+	assert(strcmp(lexer.current_token.lexeme, "19.271") == 0);
+	assert(lexer.current_token.type == TOKEN_FIXNUM);
+
+	lexer_init(&lexer, "19.271.", 0);
+	lexer_scan(&lexer);
+	assert(strcmp(lexer.current_token.lexeme, "19.271.") == 0);
+	assert(lexer.current_token.type == TOKEN_ERROR);
+
+	lexer_init(&lexer, "\"string\"   ", 0);
+	lexer_scan(&lexer);
+	assert(strcmp(lexer.current_token.lexeme, "\"string\"") == 0);
+	assert(lexer.current_token.type == TOKEN_STRING);
+
+	lexer_init(&lexer, "  '  ", 0);
+	lexer_scan(&lexer);
+	assert(strcmp(lexer.current_token.lexeme, "'") == 0);
+	assert(lexer.current_token.type == TOKEN_QUOTE);
+
+	lexer_init(&lexer, " (   ", 0);
+	lexer_scan(&lexer);
+	assert(strcmp(lexer.current_token.lexeme, "(") == 0);
+	assert(lexer.current_token.type == TOKEN_LPAREN);
+	assert(lexer.input.line == 1);
+
+        lexer_init(&lexer, "  \n)", 0);
+	lexer_scan(&lexer);
+	assert(strcmp(lexer.current_token.lexeme, ")") == 0);
+	assert(lexer.current_token.type == TOKEN_RPAREN);
+	assert(lexer.input.line == 2);
+
+	lexer_init(&lexer, " ", 0);
+	lexer_scan(&lexer);
+	assert(strcmp(lexer.current_token.lexeme, "") == 0);
+	assert(lexer.current_token.type == TOKEN_EOF);
+
+	lexer_init(&lexer, "symbol", 0);
+	lexer_scan(&lexer);
+	assert(strcmp(lexer.current_token.lexeme, "symbol") == 0);
+	assert(lexer.current_token.type == TOKEN_SYMBOL);
+
+	char *str = "(define (factorial n)\
   (if (= n 0)\
       1\
       (* n (factorial (- n 1)))))\
@@ -38,7 +91,7 @@ int main() {
 (display (fib 10))\
 (display (quicksort '(5 1 4 2 8)))";
 	
-	int tokens[] = {
+	Token tokens[] = {
 		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
 		TOKEN_LPAREN,
@@ -50,9 +103,9 @@ int main() {
 		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
 		TOKEN_SYMBOL,
-		TOKEN_INT,
+		TOKEN_FIXNUM,
 		TOKEN_RPAREN,
-		TOKEN_INT,
+		TOKEN_FIXNUM,
 		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
 		TOKEN_SYMBOL,
@@ -61,43 +114,7 @@ int main() {
 		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
 		TOKEN_SYMBOL,
-		TOKEN_INT,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_QUOTE,
-		TOKEN_LPAREN,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
+		TOKEN_FIXNUM,
 		TOKEN_RPAREN,
 		TOKEN_RPAREN,
 		TOKEN_RPAREN,
@@ -107,95 +124,6 @@ int main() {
 		TOKEN_SYMBOL,
 		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_QUOTE,
-		TOKEN_LPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_INT,
-		TOKEN_RPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_INT,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_SYMBOL,
-		TOKEN_INT,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_RPAREN,
-		TOKEN_LPAREN,
-		TOKEN_SYMBOL,
-		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
 		TOKEN_SYMBOL,
 		TOKEN_RPAREN,
@@ -211,6 +139,131 @@ int main() {
 		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
 		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_QUOTE,
+		TOKEN_LPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_FIXNUM,
+		TOKEN_RPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_FIXNUM,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_FIXNUM,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_SYMBOL,
+		TOKEN_RPAREN,
+		TOKEN_QUOTE,
+		TOKEN_LPAREN,
+		TOKEN_RPAREN,
+		TOKEN_LPAREN,
+		TOKEN_SYMBOL,
+		TOKEN_LPAREN,
 		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
 		TOKEN_LPAREN,
@@ -276,7 +329,7 @@ int main() {
 		TOKEN_SYMBOL,
 		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
-		TOKEN_INT,
+		TOKEN_FIXNUM,
 		TOKEN_RPAREN,
 		TOKEN_RPAREN,
 		TOKEN_LPAREN,
@@ -296,11 +349,11 @@ int main() {
 		TOKEN_RPAREN,
 		TOKEN_QUOTE,
 		TOKEN_LPAREN,
-		TOKEN_INT,
-		TOKEN_INT,
-		TOKEN_INT,
-		TOKEN_INT,
-		TOKEN_INT,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
 		TOKEN_RPAREN,
 		TOKEN_RPAREN,
 		TOKEN_RPAREN,
@@ -320,11 +373,11 @@ int main() {
 		TOKEN_RPAREN,
 		TOKEN_QUOTE,
 		TOKEN_LPAREN,
-		TOKEN_INT,
-		TOKEN_INT,
-		TOKEN_INT,
-		TOKEN_INT,
-		TOKEN_INT,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
 		TOKEN_RPAREN,
 		TOKEN_RPAREN,
 		TOKEN_RPAREN,
@@ -332,7 +385,7 @@ int main() {
 		TOKEN_SYMBOL,
 		TOKEN_LPAREN,
 		TOKEN_SYMBOL,
-		TOKEN_INT,
+		TOKEN_FIXNUM,
 		TOKEN_RPAREN,
 		TOKEN_RPAREN,
 		TOKEN_LPAREN,
@@ -341,14 +394,15 @@ int main() {
 		TOKEN_SYMBOL,
 		TOKEN_QUOTE,
 		TOKEN_LPAREN,
-		TOKEN_INT,
-		TOKEN_INT,
-		TOKEN_INT,
-		TOKEN_INT,
-		TOKEN_INT,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
+		TOKEN_FIXNUM,
 		TOKEN_RPAREN,
 		TOKEN_RPAREN,
-		TOKEN_RPAREN
+		TOKEN_RPAREN,
+		TOKEN_EOF
 	};
 	char *lexemes[] = {
 		"(",
@@ -660,12 +714,14 @@ int main() {
 		"8",
 		")",
 		")",
-		")"
+		")",
+		""
 	};
-	YY_BUFFER_STATE buffer = yy_scan_string(str);
-	for (int token = yylex(), i = 0; token != TOKEN_EOF; token = yylex(), i++) {
-		assert(tokens[i] == token);
-		assert(strcmp(lexemes[i], yytext) == 0);
+	lexer_init(&lexer, str, 0);
+	for (int i = 0; i < 311; i++) {
+		lexer_scan(&lexer);
+		assert(lexer.current_token.type == tokens[i]);
+		assert(strcmp(lexer.current_token.lexeme, lexemes[i]) == 0);
 	}
-	yy_delete_buffer(buffer);
+	tgc_stop(&gc);
 }

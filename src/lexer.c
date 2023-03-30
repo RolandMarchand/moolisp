@@ -1,131 +1,189 @@
 #include "lexer.h"
 
+/* ¯\_(ツ)_/¯ */
+#define WHITESPACE ' ' : case '\v' : case '\t' : case '\n' : case '\r'
+#define NUMBER									\
+	'0' : case '1' : case '2' : case '3' : case '4' : case '5' : case '6'	\
+	: case '7' : case '8' : case '9'
+#define CURRENT_CHAR (*lexer->input.ptr)
+
 extern tgc_t gc;
 
 static void lexer_fixnum(struct lexer *lexer);
 static void lexer_string(struct lexer *lexer);
 static void lexer_symbol(struct lexer *lexer);
-static void lexer_error(struct lexer *lexer, char *from, size_t nmem);
 
-void lexer_error(struct lexer *lexer, char *from, size_t nmem)
+char lexer_next_char(struct lexer *lexer)
 {
-	lexer->current_token.lexeme = tgc_alloc(&gc, nmem + 1);
-	memcpy(lexer->current_token.lexeme, from, nmem);
-	lexer->current_token.lexeme[nmem] = '\0';
-	lexer->current_token.type = TOKEN_ERROR;
-	fprintf(stderr, "error: invalid token '%s'\n", lexer->current_token.lexeme);
+	char current_char = CURRENT_CHAR;
+	switch (current_char) {
+	case '\0':
+		return '\0';
+	case '\n':
+	case '\r':
+		lexer->input.line++;
+		__attribute__((fallthrough));
+	default:
+		lexer->input.ptr++;
+		return current_char;
+	}
 }
 
-void lexer_fixnum(struct lexer *lexer)
+void lexer_init(struct lexer *lexer, char *input, unsigned int position)
 {
-	assert(*lexer->current_token.lexeme >= '0'
-	       && *lexer->current_token.lexeme <= '9');
-	char *from = lexer->input_ptr;
-	bool is_float = false;
-	while (true) {
-		switch(*lexer->input_ptr) {
-		case '.':
-			if (is_float) {
-				lexer_error(lexer, from, lexer->input_ptr - from + 1);
-				return;
-			}
-			is_float = true;
-			/* pass-through */
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			break;
-		default:
-			goto fixnum_matched;
+	lexer->input.length = strlen(input);
+	assert(position <= lexer->input.length);
+	
+	lexer->input.data = tgc_alloc(&gc, lexer->input.length * sizeof(char));
+	strcpy(lexer->input.data, input);
+
+	lexer->input.line = 1;
+	for (char *i = input; i <= input + position; i++) {
+		if (*i == '\n') {
+			lexer->input.line++;
 		}
-		lexer->input_ptr++;
 	}
-  fixnum_matched:
-	lexer->current_token.type = TOKEN_FIXNUM;
-	size_t lexeme_len = lexer->input_ptr - from;
+
+	lexer->input.ptr = lexer->input.data + position;
+	lexer->current_token.lexeme = NULL;
+	lexer->current_token.type = TOKEN_ERROR;
+}
+
+/* from inclusive, to exclusive */
+void lexer_set_token(struct lexer *lexer, Token type, char *from, char *to)
+{
+	assert(from < to);
+	lexer->current_token.type = type;
+	size_t lexeme_len = to - from;
 	lexer->current_token.lexeme = tgc_alloc(&gc, lexeme_len + 1);
 	memcpy(lexer->current_token.lexeme, from, lexeme_len);
 	lexer->current_token.lexeme[lexeme_len] = '\0';
 }
 
+/* Eat input until whitespace, ')' or EOF and mark it as TOKEN_ERROR */
+/* Print unexpected token error */
+void lexer_unknown_token(struct lexer *lexer)
+{
+	char *from = lexer->input.ptr;
+  next_char:
+	switch (CURRENT_CHAR) {
+	case WHITESPACE:
+	case ')':
+	case '\0':
+		break;
+	default:
+		lexer_next_char(lexer);
+		goto next_char;
+	}
+	lexer_set_token(lexer, TOKEN_ERROR, from, lexer->input.ptr);
+	fprintf(stderr, "error:%lu: unknown token '%s'\n", lexer->input.line,
+		lexer->current_token.lexeme);
+}
+
+void lexer_fixnum(struct lexer *lexer)
+{
+	assert(CURRENT_CHAR >= '0' && CURRENT_CHAR <= '9');
+	char *from = lexer->input.ptr;
+	bool is_float = false;
+
+  next_char:
+	switch (CURRENT_CHAR) {
+	case '.':
+		if (is_float) {
+			lexer->input.ptr = from;
+			lexer_unknown_token(lexer);
+			return;
+		}
+		is_float = true;
+		__attribute__((fallthrough));
+	case NUMBER:
+		lexer_next_char(lexer);
+		goto next_char;
+	case '\0':
+	case ')':
+	case WHITESPACE:
+		break;
+	default:
+		lexer->input.ptr = from;
+		lexer_unknown_token(lexer);
+		return;
+	}
+	lexer_set_token(lexer, TOKEN_FIXNUM, from, lexer->input.ptr);
+}
+
 void lexer_string(struct lexer *lexer)
 {
-	
+	assert(CURRENT_CHAR == '"');
+	char *from = lexer->input.ptr;
+	do {
+		if (CURRENT_CHAR == '\\') {
+			lexer_next_char(lexer);
+		}
+		if (CURRENT_CHAR == '\0') {
+			lexer_set_token(lexer, TOKEN_ERROR, from, lexer->input.ptr);
+			fprintf(stderr, "error:%lu unfinished string\n",
+				lexer->input.line);
+			return;
+		}
+		lexer_next_char(lexer);
+	} while (CURRENT_CHAR != '"');
+	lexer_next_char(lexer);
+	lexer_set_token(lexer, TOKEN_STRING, from, lexer->input.ptr);
 }
 
 void lexer_symbol(struct lexer *lexer)
 {
-	
-}
-
-void lexer_init(struct lexer *lexer, char *input, unsigned int position)
-{
-	lexer->input_length = strlen(input);
-	assert(position < lexer->input_length);
-	
-	lexer->input = tgc_alloc(&gc, lexer->input_length * sizeof(char));
-	strcpy(lexer->input, input);
-
-	lexer->input_ptr = lexer->input + position;
-	lexer->current_token.lexeme = NULL;
-	lexer->current_token.type = TOKEN_ERROR;
+#define CURRENT_CHAR_IS_SYMBOL ((CURRENT_CHAR >= '*' && CURRENT_CHAR <= '~')	\
+				|| (CURRENT_CHAR >= '#' && CURRENT_CHAR <= '&')	\
+				|| CURRENT_CHAR == '!')
+	assert(CURRENT_CHAR_IS_SYMBOL
+	       && !(CURRENT_CHAR >= '0' && CURRENT_CHAR <= '9'));
+	char *from = lexer->input.ptr;
+	while (CURRENT_CHAR_IS_SYMBOL) {
+		lexer_next_char(lexer);
+	}
+	lexer_set_token(lexer, TOKEN_SYMBOL, from, lexer->input.ptr);
+#undef CURRENT_CHAR_IS_SYMBOL
 }
 
 void lexer_scan(struct lexer *lexer)
 {
-	while (true) {
-		switch (*lexer->input_ptr) {
-		case ' ':
-		case '\v':
-		case '\t':
-		case '\n':
-		case '\r':
-			break;
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			lexer_fixnum(lexer);
-			return;
-		case '(':
-			lexer->current_token.lexeme = tgc_alloc(&gc, 2);
-			strcpy(lexer->current_token.lexeme, "(");
-			lexer->current_token.type = TOKEN_LPAREN;
-			return;
-		case ')':
-			lexer->current_token.lexeme = tgc_alloc(&gc, 2);
-			strcpy(lexer->current_token.lexeme, ")");
-			lexer->current_token.type = TOKEN_RPAREN;
-			return;
-		case '\'':
-			lexer->current_token.lexeme = tgc_alloc(&gc, 2);
-			strcpy(lexer->current_token.lexeme, "'");
-			lexer->current_token.type = TOKEN_QUOTE;
-			return;
-		case '"':
-			lexer_string(lexer);
-			return;
-		case '\0':
-			lexer->current_token.lexeme = NULL;
-			lexer->current_token.type = TOKEN_EOF;
-			return;
-		default:
-			lexer_symbol(lexer);
-			return;
-		}
-		lexer->input_ptr++;
+  next_char:
+	switch (CURRENT_CHAR) {
+	case WHITESPACE:
+		break;
+	case NUMBER:
+		lexer_fixnum(lexer);
+		return;
+	case '(':
+		lexer->current_token.lexeme = tgc_alloc(&gc, 2);
+		strcpy(lexer->current_token.lexeme, "(");
+		lexer->current_token.type = TOKEN_LPAREN;
+		lexer_next_char(lexer);
+		return;
+	case ')':
+		lexer->current_token.lexeme = tgc_alloc(&gc, 2);
+		strcpy(lexer->current_token.lexeme, ")");
+		lexer->current_token.type = TOKEN_RPAREN;
+		lexer_next_char(lexer);
+		return;
+	case '\'':
+		lexer->current_token.lexeme = tgc_alloc(&gc, 2);
+		strcpy(lexer->current_token.lexeme, "'");
+		lexer->current_token.type = TOKEN_QUOTE;
+		lexer_next_char(lexer);
+		return;
+	case '"':
+		lexer_string(lexer);
+		return;
+	case '\0':
+		lexer->current_token.lexeme = tgc_calloc(&gc, 1, 1);
+		lexer->current_token.type = TOKEN_EOF;
+		return;
+	default:
+		lexer_symbol(lexer);
+		return;
 	}
+	lexer_next_char(lexer);
+	goto next_char;
 }

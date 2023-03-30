@@ -15,7 +15,6 @@ endif()
 include_directories(
   "${CMAKE_SOURCE_DIR}/modules"
   "${CMAKE_SOURCE_DIR}/src"
-  "${CMAKE_BINARY_DIR}/src"
 )
 
 enable_testing()
