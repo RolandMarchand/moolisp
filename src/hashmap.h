@@ -1,7 +1,7 @@
+#pragma once
+
 #include "common.h"
 #include "var.h"
-
-#pragma once
 
 typedef enum {
 	HASHMAP_STATE_EMPTY,
