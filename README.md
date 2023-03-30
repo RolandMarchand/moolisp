@@ -60,4 +60,6 @@ Moolisp is an open-source project, and contributions are welcome! If you find a 
 
 ## License
 
-Moolisp is licensed under the BSD Zero Clause License. See the LICENSE file for more information.
+This software is licensed under the GNU General Public License v3.0 (GPLv3). You may use, distribute, and modify this software in accordance with the terms and conditions of the GPLv3. A copy of the license can be found in the LICENSE file included with this software.
+
+Please note that by using, distributing, or modifying this software, you are agreeing to be bound by the terms and conditions of the GPLv3. If you do not agree with these terms and conditions, you may not use, distribute, or modify this software.
