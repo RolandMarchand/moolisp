@@ -146,7 +146,21 @@ void lexer_symbol(struct lexer *lexer)
 #undef CURRENT_CHAR_IS_SYMBOL
 }
 
-void lexer_scan(struct lexer *lexer)
+struct token lexer_peek(struct lexer *lexer)
+{
+	char *save_ptr = lexer->input.ptr;
+	size_t save_line = lexer->input.line;
+	struct token save_token = lexer->current_token;
+	struct token t = lexer_scan(lexer);
+
+	lexer->input.ptr = save_ptr;
+	lexer->input.line = save_line;
+	lexer->current_token = save_token;
+
+	return t;
+}
+
+struct token lexer_scan(struct lexer *lexer)
 {
   next_char:
 	switch (CURRENT_CHAR) {
