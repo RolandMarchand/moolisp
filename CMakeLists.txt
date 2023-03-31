@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(moolisp VERSION 0.1
+project(moolisp VERSION 0.1.0
   DESCRIPTION "A lisp"
   LANGUAGES C)
 set(CMAKE_C_STANDARD 11)
@@ -15,6 +15,12 @@ endif()
 include_directories(
   "${CMAKE_SOURCE_DIR}/modules"
   "${CMAKE_SOURCE_DIR}/src"
+  "${PROJECT_BINARY_DIR}/src"
+)
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/src/config.h.in"
+    "${PROJECT_BINARY_DIR}/src/config.h"
 )
 
 enable_testing()
