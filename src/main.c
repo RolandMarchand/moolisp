@@ -59,15 +59,15 @@ struct var progn(struct var list)
 	assert(list.type == VAR_CONS);
 	struct var ret;
 	do {
-		ret = eval(list.cons->x);
-		list = list.cons->y;
-	} while (!nil(list));
+		ret = eval(list.as.cons->x);
+		list = list.as.cons->y;
+	} while (!nilp(list));
 	return ret;
 }
 
 struct var unless(struct var test, struct var then, struct var otherwise)
 {
-	if (nil(test)) {
+	if (nilp(test)) {
 		return progn(then);
 	} else {
 		return progn(otherwise);
