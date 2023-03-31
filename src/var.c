@@ -48,18 +48,52 @@ struct var symbol(char *symbol)
 	strcpy(symbol_cpy, symbol);
 	return (struct var){
 		.type = VAR_SYMBOL,
-		.as.string = symbol_cpy
+		.as.symbol = symbol_cpy
 	};
 }
 
-struct var car(struct var list)
+struct var *car(struct var *list)
 {
-	assert(list.type == VAR_CONS);
-	return list.as.cons->x;
+	assert(list->type == VAR_CONS);
+	return &list->as.cons->x;
 }
 
-struct var cdr(struct var list)
+struct var *cdr(struct var *list)
 {
-	assert(list.type == VAR_CONS);
-	return list.as.cons->y;
+	assert(list->type == VAR_CONS);
+	return &list->as.cons->y;
 }
+
+struct var number(double number)
+{
+	return (struct var){
+		.type = VAR_NUMBER,
+		.as.number = number
+	};
+}
+
+struct var quote(struct var expr)
+{
+	return cons((struct var){.type = VAR_QUOTE}, expr);
+}
+
+struct var nil()
+{
+	return (struct var){};
+}
+
+bool nilp(struct var *v)
+{
+	return v->type == VAR_NIL;
+}
+
+bool eq(struct var *a, struct var *b)
+{
+	return a->type == b->type && a->as.cons == b->as.cons;
+}
+
+bool atom(struct var *v)
+{
+	return v->type != VAR_CONS;
+}
+
