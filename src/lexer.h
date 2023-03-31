@@ -4,7 +4,7 @@
 
 typedef enum {
 	TOKEN_EOF = 0,
-	TOKEN_FIXNUM,
+	TOKEN_NUMBER,
 	TOKEN_STRING,
 	TOKEN_SYMBOL,
 	TOKEN_QUOTE,
@@ -13,6 +13,11 @@ typedef enum {
 	TOKEN_ERROR
 } Token;
 
+struct token {
+	char *lexeme;
+	Token type;
+};
+
 struct lexer {
 	struct {
 		char *data;
@@ -20,11 +25,9 @@ struct lexer {
 		size_t length;
 		size_t line;
 	} input;
-	struct {
-		char *lexeme;
-		Token type;
-	} current_token;
+	struct token current_token;
 };
 
 void lexer_init(struct lexer *, char *input, unsigned int position);
-void lexer_scan(struct lexer *);
+struct token lexer_scan(struct lexer *);
+struct token lexer_peek(struct lexer *);

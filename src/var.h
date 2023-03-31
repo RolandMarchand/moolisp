@@ -5,10 +5,11 @@
 typedef enum {
 	VAR_NIL = 0,
 	VAR_SYMBOL,
-	VAR_INT,
+	VAR_NUMBER,
 	VAR_STRING,
 	VAR_CONS,
-	VAR_FUNCTION
+	VAR_FUNCTION,
+	VAR_QUOTE
 } VarType;
 
 struct var {
@@ -16,10 +17,10 @@ struct var {
 	union {
 		char *string;
 		char *symbol;
-		int64_t i64;
+		double number;
 		struct cons *cons;
 		struct function *function;
-	};
+	} as;
 };
 
 struct cons {
@@ -33,12 +34,15 @@ struct function {
 	struct var body;
 };
 
-struct var create_int(int64_t i64);
+inline struct var number(double number) { return (struct var){ .type = VAR_NUMBER, .as.number = number }; }
+inline struct var nil() { return (struct var){}; }
+struct var string(char *string);
+struct var symbol(char *symbol);
 struct var lambda(size_t param_cnt, char **param_names, struct var body);
 struct var cons(struct var x, struct var y);
-struct var create_string(char *string);
 struct var car(struct var list);
 struct var cdr(struct var list);
-bool atom(struct var v);
-bool eq(struct var a, struct var b);
-bool nil(struct var v);
+inline struct var quote(struct var expr) { return cons((struct var){ .type = VAR_QUOTE }, expr); }
+inline bool atom(struct var v) { return v.type != VAR_CONS; };
+inline bool eq(struct var a, struct var b) { return a.type == b.type && a.as.cons == b.as.cons; }
+inline bool nilp(struct var v) { return v.type == VAR_NIL; }

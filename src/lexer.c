@@ -108,7 +108,7 @@ void lexer_fixnum(struct lexer *lexer)
 		lexer_unknown_token(lexer);
 		return;
 	}
-	lexer_set_token(lexer, TOKEN_FIXNUM, from, lexer->input.ptr);
+	lexer_set_token(lexer, TOKEN_NUMBER, from, lexer->input.ptr);
 }
 
 void lexer_string(struct lexer *lexer)
@@ -168,35 +168,35 @@ struct token lexer_scan(struct lexer *lexer)
 		break;
 	case NUMBER:
 		lexer_fixnum(lexer);
-		return;
+		return lexer->current_token;
 	case '(':
 		lexer->current_token.lexeme = tgc_alloc(&gc, 2);
 		strcpy(lexer->current_token.lexeme, "(");
 		lexer->current_token.type = TOKEN_LPAREN;
 		lexer_next_char(lexer);
-		return;
+		return lexer->current_token;
 	case ')':
 		lexer->current_token.lexeme = tgc_alloc(&gc, 2);
 		strcpy(lexer->current_token.lexeme, ")");
 		lexer->current_token.type = TOKEN_RPAREN;
 		lexer_next_char(lexer);
-		return;
+		return lexer->current_token;
 	case '\'':
 		lexer->current_token.lexeme = tgc_alloc(&gc, 2);
 		strcpy(lexer->current_token.lexeme, "'");
 		lexer->current_token.type = TOKEN_QUOTE;
 		lexer_next_char(lexer);
-		return;
+		return lexer->current_token;
 	case '"':
 		lexer_string(lexer);
-		return;
+		return lexer->current_token;
 	case '\0':
 		lexer->current_token.lexeme = tgc_calloc(&gc, 1, 1);
 		lexer->current_token.type = TOKEN_EOF;
-		return;
+		return lexer->current_token;
 	default:
 		lexer_symbol(lexer);
-		return;
+		return lexer->current_token;
 	}
 	lexer_next_char(lexer);
 	goto next_char;
