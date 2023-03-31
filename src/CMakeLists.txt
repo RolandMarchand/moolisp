@@ -13,4 +13,10 @@ add_library(repl repl.c)
 target_link_libraries(repl PRIVATE ${Readline_LIBRARY})
 
 add_executable("${PROJECT_NAME}" main.c)
-target_link_libraries("${PROJECT_NAME}" PRIVATE lexer tgc structures repl)
+target_link_libraries("${PROJECT_NAME}" PRIVATE
+  structures
+  context
+  lexer
+  repl
+  tgc
+)
