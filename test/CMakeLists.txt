@@ -1,10 +1,10 @@
 include_directories("${CMAKE_SOURCE_DIR}/src")
 add_custom_target(tests DEPENDS
   test_lexer
+  test_compiler
   test_hashmap
   test_linked_list
   test_context
-  test_compiler
 )
 add_custom_target(test_and_run COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS tests)
 
@@ -24,7 +24,7 @@ add_executable(test_context test_context.c)
 target_link_libraries(test_context PRIVATE context)
 
 add_test(Lexer test_lexer)
+add_test(Compiler test_compiler)
 add_test(Hashmap test_hashmap)
 add_test(LinkedList test_linked_list)
 add_test(Context test_context)
-add_test(Compiler test_compiler)

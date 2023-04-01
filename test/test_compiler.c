@@ -4,6 +4,9 @@
 tgc_t gc;
 
 void _main(void);
+void test1();
+void test2();
+void test3();
 
 int main(void)
 {
@@ -11,6 +14,13 @@ int main(void)
 	tgc_start(&gc, &dummy);
 	_main();
 	tgc_stop(&gc);
+}
+
+void _main(void)
+{
+	test1();
+	test2();
+	test3();
 }
 
 void test1()
@@ -88,8 +98,9 @@ void test2()
 	assert(strcmp(yo->as.string, "yo") == 0);
 }
 
-void _main(void)
+void test3()
 {
-	test1();
-	test2();
+	struct var p = parse("()'()");
+	assert(nilp(car(&p)));
+	assert(!nilp(car(cdr(&p))));
 }

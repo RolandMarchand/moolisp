@@ -45,7 +45,6 @@ struct var parse_list(struct parser *parser)
 	while (lexer_peek(&parser->lexer).type != TOKEN_RPAREN) {
 		*list_tail = cons(parse_expression(parser), nil());
 		list_tail = &list_tail->as.cons->y;
-			
 	}
 	lexer_scan(&parser->lexer);
 	return list;
