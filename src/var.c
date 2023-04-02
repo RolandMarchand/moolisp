@@ -1,8 +1,27 @@
 #include "var.h"
+#define t() number(1);
 
 extern tgc_t gc;
 
-struct var lambda(size_t param_cnt, char **param_names, struct var body)
+static bool var2bool(const struct var *v);
+static struct var *create_var(const struct var *v);
+static bool compare_functions(const struct var *f1, const struct var *f2);
+static bool compare_cons(const struct var *c1, const struct var *c2);
+
+bool var2bool(const struct var *v)
+{
+	return memcmp(v, &(struct var){}, sizeof(struct var)) != 0;
+}
+
+struct var *create_var(const struct var *v)
+{
+	struct var *ret = tgc_alloc(&gc, sizeof(struct var));
+	*ret = *v;
+	return ret;
+}
+
+struct var *lambda(size_t param_cnt, const char **param_names,
+		  const struct var *body)
 {
 	char **names = param_cnt
 		? tgc_calloc(&gc, param_cnt, sizeof(char*))
@@ -14,86 +33,242 @@ struct var lambda(size_t param_cnt, char **param_names, struct var body)
 	struct function *f = tgc_alloc(&gc, sizeof(struct function));
 	f->param_cnt = param_cnt;
 	f->param_names = names;
-	f->body = body;
+	*f->body = *body;
 
-	return (struct var){
-		.type = VAR_FUNCTION,
-		.as.function = f
-	};
+	return create_var(&(struct var){
+			.type = VAR_FUNCTION,
+			.as.function = f
+		});
 }
 
-struct var cons(struct var x, struct var y)
+struct var *cons(struct var *x, struct var *y)
 {
 	struct cons *c = tgc_calloc(&gc, 1, sizeof(struct cons));
 	c->x = x, c->y = y;
-	return (struct var){
-		.type = VAR_CONS,
-		.as.cons = c
-	};
+	return create_var(&(struct var){
+			.type = VAR_CONS,
+			.as.cons = c
+		});
 }
 
-struct var string(char *string)
+struct var *string(const char *string)
 {
 	char *string_cpy = tgc_alloc(&gc, strlen(string) + 1);
 	strcpy(string_cpy, string);
-	return (struct var){
-		.type = VAR_STRING,
-		.as.string = string_cpy
-	};
+	return create_var(&(struct var){
+			.type = VAR_STRING,
+			.as.string = string_cpy
+		});
 }
 
-struct var symbol(char *symbol)
+struct var *symbol(const char *symbol)
 {
 	char *symbol_cpy = tgc_alloc(&gc, strlen(symbol) + 1);
 	strcpy(symbol_cpy, symbol);
-	return (struct var){
-		.type = VAR_SYMBOL,
-		.as.symbol = symbol_cpy
-	};
+	return create_var(&(struct var){
+			.type = VAR_SYMBOL,
+			.as.symbol = symbol_cpy
+		});
 }
 
-struct var *car(struct var *list)
+struct var *car(const struct var *list)
 {
+	if (!var2bool(list)) {
+		return (struct var *)list;
+	}
 	assert(list->type == VAR_CONS);
-	return &list->as.cons->x;
+	return list->as.cons->x;
 }
 
-struct var *cdr(struct var *list)
+struct var *cdr(const struct var *list)
 {
+	if (!var2bool(list)) {
+		return (struct var *)list;
+	}
 	assert(list->type == VAR_CONS);
-	return &list->as.cons->y;
+	return list->as.cons->y;
 }
 
-struct var number(double number)
+struct var *number(double number)
 {
-	return (struct var){
-		.type = VAR_NUMBER,
-		.as.number = number
-	};
+	return create_var(&(struct var){
+			.type = VAR_NUMBER,
+			.as.number = number
+		});
 }
 
-struct var quote(struct var expr)
+struct var *quote(struct var *expr)
 {
-	return cons((struct var){.type = VAR_QUOTE}, expr);
+	return cons(symbol("quote"), cons(expr, nil()));
 }
 
-struct var nil()
+struct var *nil()
 {
-	return (struct var){};
+	return create_var(&(struct var){});
 }
 
-bool nilp(struct var *v)
+struct var *nilp(const struct var *v)
 {
-	return v->type == VAR_NIL;
+	if (var2bool(v)) {
+		return t();
+	}
+	return nil();
 }
 
-bool eq(struct var *a, struct var *b)
+struct var *listp(const struct var *v)
 {
-	return a->type == b->type && a->as.cons == b->as.cons;
+	if (v->type == VAR_CONS) {
+		return t();
+	}
+	return nil();
 }
 
-bool atom(struct var *v)
+struct var *not(const struct var *v)
 {
-	return v->type != VAR_CONS;
+	if (var2bool(nilp(v))) {
+		return t();
+	}
+	return nil();
 }
 
+struct var *eq(const struct var *a, const struct var *b)
+{
+	if (a == b) {
+		return t();
+	}
+	return nil();
+}
+
+bool compare_functions(const struct var *_f1, const struct var *_f2)
+{
+	assert(var2bool(functionp(_f1)));
+	assert(var2bool(functionp(_f2)));
+	struct function *f1 = _f1->as.function;
+	struct function *f2 = _f2->as.function;
+
+	if (f1->param_cnt != f2->param_cnt) {
+		return false;
+	}
+	for (size_t i = 0; i < f1->param_cnt; i++) {
+		if (strcmp(f1->param_names[i], f2->param_names[i]) != 0) {
+			return false;
+		}
+	}
+	return var2bool(equal(f1->body, f2->body));
+}
+
+bool compare_cons(const struct var *c1, const struct var *c2)
+{
+	bool c1_nil = var2bool(nilp(c1));
+	bool c2_nil = var2bool(nilp(c2));
+	if ((c1_nil ^ c2_nil) != 0) {
+		return nil();
+	}
+	if (c1_nil) {
+		return t();
+	}
+	return equal(c1->as.cons->x, c2->as.cons->x)
+		&& equal(c1->as.cons->y, c2->as.cons->y);
+}
+
+struct var *equal(const struct var *a, const struct var *b)
+{
+	if (a->type != b->type) {
+		return nil();
+	}
+	if (var2bool(eq(a, b))) {
+		return t();
+	}
+	bool _equal = false;
+	switch (a->type) {
+	case VAR_NUMBER:
+		_equal = a->as.number == b->as.number;
+	case VAR_SYMBOL:
+		_equal = strcmp(a->as.symbol, b->as.symbol) == 0;
+	case VAR_STRING:
+		_equal = strcmp(a->as.string, b->as.string) == 0;
+	case VAR_FUNCTION:
+		_equal = compare_functions(a, b);
+	case VAR_CONS:
+		_equal = compare_cons(a, b);
+	default:
+		fprintf(stderr, "error: unknown type to compare equality\n");
+		exit(EXIT_FAILURE);
+	}
+	if (_equal) {
+		return t();
+	}
+	return nil();
+}
+
+struct var *atom(const struct var *v)
+{
+	if (v->type != VAR_CONS) {
+		return t();
+	}
+	return nil();
+}
+
+struct var *functionp(const struct var *f)
+{
+	if (f->type == VAR_FUNCTION) {
+		return t();
+	}
+	return nil();	
+}
+
+struct var *dolist(const struct var *list, struct var *(f)(const struct var *))
+{
+	if (!var2bool(list)) {
+		return (struct var *)list;
+	}
+
+	assert(var2bool(listp(list)));
+	struct var *first = car(list);
+	struct var *rest = cdr(list);
+	struct var *last_ret = NULL;
+	do {
+		last_ret = f(first);
+		first = car(rest);
+		rest = cdr(rest);
+	} while (var2bool(first) || var2bool(rest));
+
+	assert(last_ret);
+	return last_ret;
+}
+
+struct var *print_list(struct var *v)
+{
+	assert(var2bool(listp(v)));
+	return v;
+}
+
+struct var *print(const struct var *v)
+{
+	switch (v->type) {
+	case VAR_SYMBOL:
+		printf("%s", v->as.symbol);
+		break;
+	case VAR_NUMBER:
+		printf("%g", v->as.number);
+		break;
+	case VAR_STRING:
+		printf("%s", v->as.string);
+		break;
+	case VAR_CONS:
+		if (var2bool(equal(car(v), symbol("quote")))
+		    && var2bool(nilp(cdr(cdr(v))))) {
+			printf("'");
+			print(car(cdr(v)));
+			break;
+		}
+		printf("(");
+		dolist(v, print);
+		printf(")");
+		break;
+	default:
+		fprintf(stderr, "error: unknown variant type '%d'\n", v->type);
+		exit(EXIT_FAILURE);
+	}
+	return (struct var *)v;
+}
