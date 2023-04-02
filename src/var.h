@@ -27,21 +27,22 @@ struct cons {
 };
 
 struct function {
-	size_t param_cnt;
-	char **param_names;
+	struct var *param_cnt;
+	struct var *param_names;
 	struct var *body;
 };
 
-struct var *number(double number);
 struct var *nil();
+struct var *number(double number);
+struct var *quote(struct var *expr);
 struct var *string(const char *string);
 struct var *symbol(const char *symbol);
-struct var *lambda(size_t param_cnt, const char **param_names,
-		  const struct var *body);
 struct var *cons(struct var *x, struct var *y);
+struct var *lambda(struct var *param_cnt, struct var *param_names,
+		   struct var *body);
+
 struct var *car(const struct var *list);
 struct var *cdr(const struct var *list);
-struct var *quote(struct var *expr);
 struct var *dolist(const struct var *list, struct var *(f)(const struct var *));
 struct var *atom(const struct var *v);
 struct var *functionp(const struct var *f);

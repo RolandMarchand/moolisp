@@ -10,31 +10,28 @@ static bool compare_cons(const struct var *c1, const struct var *c2);
 
 bool var2bool(const struct var *v)
 {
+	assert(v);
 	return memcmp(v, &(struct var){}, sizeof(struct var)) != 0;
 }
 
 struct var *create_var(const struct var *v)
 {
+	assert(v);
 	struct var *ret = tgc_alloc(&gc, sizeof(struct var));
 	*ret = *v;
 	return ret;
 }
 
-struct var *lambda(size_t param_cnt, const char **param_names,
-		  const struct var *body)
+struct var *lambda(struct var *param_cnt, struct var *param_names,
+		   struct var *body)
 {
-	char **names = param_cnt
-		? tgc_calloc(&gc, param_cnt, sizeof(char*))
-		: NULL;
-	for (size_t i = 0; i < param_cnt; i++) {
-		names[i] = strdup(param_names[i]);
-	}
-
+	assert(param_cnt);
+	assert(param_names);
+	assert(body);
 	struct function *f = tgc_alloc(&gc, sizeof(struct function));
 	f->param_cnt = param_cnt;
-	f->param_names = names;
-	*f->body = *body;
-
+	f->param_names = param_names;
+	f->body = body;
 	return create_var(&(struct var){
 			.type = VAR_FUNCTION,
 			.as.function = f
@@ -43,6 +40,8 @@ struct var *lambda(size_t param_cnt, const char **param_names,
 
 struct var *cons(struct var *x, struct var *y)
 {
+	assert(x);
+	assert(y);
 	struct cons *c = tgc_calloc(&gc, 1, sizeof(struct cons));
 	c->x = x, c->y = y;
 	return create_var(&(struct var){
@@ -53,6 +52,7 @@ struct var *cons(struct var *x, struct var *y)
 
 struct var *string(const char *string)
 {
+	assert(string);
 	char *string_cpy = tgc_alloc(&gc, strlen(string) + 1);
 	strcpy(string_cpy, string);
 	return create_var(&(struct var){
@@ -63,6 +63,7 @@ struct var *string(const char *string)
 
 struct var *symbol(const char *symbol)
 {
+	assert(symbol);
 	char *symbol_cpy = tgc_alloc(&gc, strlen(symbol) + 1);
 	strcpy(symbol_cpy, symbol);
 	return create_var(&(struct var){
@@ -73,6 +74,7 @@ struct var *symbol(const char *symbol)
 
 struct var *car(const struct var *list)
 {
+	assert(list);
 	if (!var2bool(list)) {
 		return (struct var *)list;
 	}
@@ -82,6 +84,7 @@ struct var *car(const struct var *list)
 
 struct var *cdr(const struct var *list)
 {
+	assert(list);
 	if (!var2bool(list)) {
 		return (struct var *)list;
 	}
@@ -99,6 +102,7 @@ struct var *number(double number)
 
 struct var *quote(struct var *expr)
 {
+	assert(expr);
 	return cons(symbol("quote"), cons(expr, nil()));
 }
 
@@ -109,6 +113,7 @@ struct var *nil()
 
 struct var *nilp(const struct var *v)
 {
+	assert(v);
 	if (var2bool(v)) {
 		return t();
 	}
@@ -117,6 +122,7 @@ struct var *nilp(const struct var *v)
 
 struct var *listp(const struct var *v)
 {
+	assert(v);
 	if (v->type == VAR_CONS) {
 		return t();
 	}
@@ -125,6 +131,7 @@ struct var *listp(const struct var *v)
 
 struct var *not(const struct var *v)
 {
+	assert(v);
 	if (var2bool(nilp(v))) {
 		return t();
 	}
@@ -133,6 +140,8 @@ struct var *not(const struct var *v)
 
 struct var *eq(const struct var *a, const struct var *b)
 {
+	assert(a);
+	assert(b);
 	if (a == b) {
 		return t();
 	}
@@ -141,20 +150,16 @@ struct var *eq(const struct var *a, const struct var *b)
 
 bool compare_functions(const struct var *_f1, const struct var *_f2)
 {
+	assert(_f1);
+	assert(_f2);
 	assert(var2bool(functionp(_f1)));
 	assert(var2bool(functionp(_f2)));
 	struct function *f1 = _f1->as.function;
 	struct function *f2 = _f2->as.function;
 
-	if (f1->param_cnt != f2->param_cnt) {
-		return false;
-	}
-	for (size_t i = 0; i < f1->param_cnt; i++) {
-		if (strcmp(f1->param_names[i], f2->param_names[i]) != 0) {
-			return false;
-		}
-	}
-	return var2bool(equal(f1->body, f2->body));
+	return var2bool(equal(f1->param_cnt, f2->param_cnt))
+		&& var2bool(equal(f1->param_names, f2->param_names))
+		&& var2bool(equal(f1->body, f2->body));
 }
 
 bool compare_cons(const struct var *c1, const struct var *c2)
@@ -183,14 +188,19 @@ struct var *equal(const struct var *a, const struct var *b)
 	switch (a->type) {
 	case VAR_NUMBER:
 		_equal = a->as.number == b->as.number;
+		break;
 	case VAR_SYMBOL:
 		_equal = strcmp(a->as.symbol, b->as.symbol) == 0;
+		break;
 	case VAR_STRING:
 		_equal = strcmp(a->as.string, b->as.string) == 0;
+		break;
 	case VAR_FUNCTION:
 		_equal = compare_functions(a, b);
+		break;
 	case VAR_CONS:
 		_equal = compare_cons(a, b);
+		break;
 	default:
 		fprintf(stderr, "error: unknown type to compare equality\n");
 		exit(EXIT_FAILURE);
