@@ -43,7 +43,7 @@ struct var *lambda(struct var *param_cnt, struct var *param_names,
 
 struct var *car(const struct var *list);
 struct var *cdr(const struct var *list);
-struct var *dolist(const struct var *list, struct var *(f)(const struct var *));
+/* struct var *dolist(const struct var *list, struct var *(f)(const struct var *)); */
 struct var *atom(const struct var *v);
 struct var *functionp(const struct var *f);
 struct var *not(const struct var *v);
@@ -52,3 +52,5 @@ struct var *equal(const struct var *a, const struct var *b);
 struct var *nilp(const struct var *v);
 struct var *listp(const struct var *v);
 struct var *print(const struct var *v);
+
+bool _var2bool(const struct var *v);

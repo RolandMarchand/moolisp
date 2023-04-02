@@ -1,14 +1,13 @@
 #include "var.h"
-#define t() number(1);
+#define t() number(1)
 
 extern tgc_t gc;
 
-static bool var2bool(const struct var *v);
 static struct var *create_var(const struct var *v);
 static bool compare_functions(const struct var *f1, const struct var *f2);
 static bool compare_cons(const struct var *c1, const struct var *c2);
 
-bool var2bool(const struct var *v)
+bool _var2bool(const struct var *v)
 {
 	assert(v);
 	return memcmp(v, &(struct var){}, sizeof(struct var)) != 0;
@@ -75,7 +74,7 @@ struct var *symbol(const char *symbol)
 struct var *car(const struct var *list)
 {
 	assert(list);
-	if (!var2bool(list)) {
+	if (!_var2bool(list)) {
 		return (struct var *)list;
 	}
 	assert(list->type == VAR_CONS);
@@ -85,7 +84,7 @@ struct var *car(const struct var *list)
 struct var *cdr(const struct var *list)
 {
 	assert(list);
-	if (!var2bool(list)) {
+	if (!_var2bool(list)) {
 		return (struct var *)list;
 	}
 	assert(list->type == VAR_CONS);
@@ -114,10 +113,10 @@ struct var *nil()
 struct var *nilp(const struct var *v)
 {
 	assert(v);
-	if (var2bool(v)) {
-		return t();
+	if (_var2bool(v)) {
+		return nil();
 	}
-	return nil();
+	return t();
 }
 
 struct var *listp(const struct var *v)
@@ -132,7 +131,7 @@ struct var *listp(const struct var *v)
 struct var *not(const struct var *v)
 {
 	assert(v);
-	if (var2bool(nilp(v))) {
+	if (_var2bool(nilp(v))) {
 		return t();
 	}
 	return nil();
@@ -152,28 +151,28 @@ bool compare_functions(const struct var *_f1, const struct var *_f2)
 {
 	assert(_f1);
 	assert(_f2);
-	assert(var2bool(functionp(_f1)));
-	assert(var2bool(functionp(_f2)));
+	assert(_var2bool(functionp(_f1)));
+	assert(_var2bool(functionp(_f2)));
 	struct function *f1 = _f1->as.function;
 	struct function *f2 = _f2->as.function;
 
-	return var2bool(equal(f1->param_cnt, f2->param_cnt))
-		&& var2bool(equal(f1->param_names, f2->param_names))
-		&& var2bool(equal(f1->body, f2->body));
+	return _var2bool(equal(f1->param_cnt, f2->param_cnt))
+		&& _var2bool(equal(f1->param_names, f2->param_names))
+		&& _var2bool(equal(f1->body, f2->body));
 }
 
 bool compare_cons(const struct var *c1, const struct var *c2)
 {
-	bool c1_nil = var2bool(nilp(c1));
-	bool c2_nil = var2bool(nilp(c2));
+	bool c1_nil = _var2bool(nilp(c1));
+	bool c2_nil = _var2bool(nilp(c2));
 	if ((c1_nil ^ c2_nil) != 0) {
-		return nil();
+		return _var2bool(nil());
 	}
 	if (c1_nil) {
-		return t();
+		return _var2bool(t());
 	}
-	return equal(c1->as.cons->x, c2->as.cons->x)
-		&& equal(c1->as.cons->y, c2->as.cons->y);
+	return _var2bool(equal(c1->as.cons->x, c2->as.cons->x))
+		&& _var2bool(equal(c1->as.cons->y, c2->as.cons->y));
 }
 
 struct var *equal(const struct var *a, const struct var *b)
@@ -181,7 +180,7 @@ struct var *equal(const struct var *a, const struct var *b)
 	if (a->type != b->type) {
 		return nil();
 	}
-	if (var2bool(eq(a, b))) {
+	if (_var2bool(eq(a, b))) {
 		return t();
 	}
 	bool _equal = false;
@@ -216,7 +215,7 @@ struct var *atom(const struct var *v)
 	if (v->type != VAR_CONS) {
 		return t();
 	}
-	return nil();
+	return nilp(v);
 }
 
 struct var *functionp(const struct var *f)
@@ -227,29 +226,30 @@ struct var *functionp(const struct var *f)
 	return nil();	
 }
 
-struct var *dolist(const struct var *list, struct var *(f)(const struct var *))
-{
-	if (!var2bool(list)) {
-		return (struct var *)list;
-	}
+/* struct var *dolist(const struct var *list, struct var *(f)(const struct var *)) */
+/* { */
+/* 	if (!_var2bool(list)) { */
+/* 		/\* TODO: error handling *\/ */
+/* 		return (struct var *)list; */
+/* 	} */
 
-	assert(var2bool(listp(list)));
-	struct var *first = car(list);
-	struct var *rest = cdr(list);
-	struct var *last_ret = NULL;
-	do {
-		last_ret = f(first);
-		first = car(rest);
-		rest = cdr(rest);
-	} while (var2bool(first) || var2bool(rest));
+/* 	assert(_var2bool(listp(list))); */
+/* 	struct var *first = car(list); */
+/* 	struct var *rest = cdr(list); */
+/* 	struct var *last_ret = NULL; */
+/* 	do { */
+/* 		last_ret = f(first); */
+/* 		first = car(rest); */
+/* 		rest = cdr(rest); */
+/* 	} while (_var2bool(first) || _var2bool(rest)); */
 
-	assert(last_ret);
-	return last_ret;
-}
+/* 	assert(last_ret); */
+/* 	return last_ret; */
+/* } */
 
 struct var *print_list(struct var *v)
 {
-	assert(var2bool(listp(v)));
+	assert(_var2bool(listp(v)));
 	return v;
 }
 
@@ -266,14 +266,15 @@ struct var *print(const struct var *v)
 		printf("%s", v->as.string);
 		break;
 	case VAR_CONS:
-		if (var2bool(equal(car(v), symbol("quote")))
-		    && var2bool(nilp(cdr(cdr(v))))) {
+		if (_var2bool(equal(car(v), symbol("quote")))
+		    && _var2bool(nilp(cdr(cdr(v))))) {
 			printf("'");
 			print(car(cdr(v)));
 			break;
 		}
 		printf("(");
-		dolist(v, print);
+		/* TODO: implement functions and evals */
+		/* dolist(v, print); */
 		printf(")");
 		break;
 	default:

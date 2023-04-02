@@ -30,6 +30,7 @@ void test1()
 	assert(addition);
 	assert(addition->type == VAR_CONS);
 
+	/* TODO: wire the symbols to the environment */
 	struct var *plus = car(addition);
 	assert(plus);
 	assert(plus->type == VAR_SYMBOL);
