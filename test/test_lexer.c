@@ -73,40 +73,44 @@ void _main(void)
 	assert(strcmp(lexer.current_token.lexeme, "symbol") == 0);
 	assert(lexer.current_token.type == TOKEN_SYMBOL);
 
-	char *str = "(define (factorial n)\
-  (if (= n 0)\
-      1\
-      (* n (factorial (- n 1)))))\
-\
-(define (map f lst)\
-  (if (null? lst)\
-      '()\
-      (cons (f (car lst)) (map f (cdr lst)))))\
-\
-(define (filter pred lst)\
-  (cond ((null? lst) '())\
-        ((pred (car lst)) (cons (car lst) (filter pred (cdr lst))))\
-        (else (filter pred (cdr lst)))))\
-\
-\
-(define (fib n)\
-  (if (< n 2)\
-      n\
-      (+ (fib (- n 1)) (fib (- n 2)))))\
-\
-(define (quicksort lst)\
-  (if (null? lst)\
-      '()\
-      (let ((pivot (car lst))\
-            (rest (cdr lst)))\
-        (append (quicksort (filter (lambda (x) (< x pivot)) rest))\
-                (cons pivot (quicksort (filter (lambda (x) (>= x pivot)) rest)))))))\
-\
-(display (factorial 5))\
-(display (map (lambda (x) (* x x)) '(1 2 3 4 5)))\
-(display (filter (lambda (x) (odd? x)) '(1 2 3 4 5)))\
-(display (fib 10))\
-(display (quicksort '(5 1 4 2 8)))";
+	char *str = ";; return factorial of n\n\
+(define (factorial n)\n\
+  (if (= n 0)\n\
+      1\n\
+      (* n (factorial (- n 1)))))\n\
+\n\
+;; comment test\n\
+(define (map f lst)\n\
+  (if (null? lst)\n\
+      '()\n\
+      (cons (f (car lst)) (map f (cdr lst)))))\n\
+\n\
+(define (filter pred lst) ; single line comment\n\
+  (cond ((null? lst) '()) ; more comments\n\
+        ((pred (car lst)) (cons (car lst) (filter pred (cdr lst))))\n\
+        (else (filter pred (cdr lst)))))\n\
+\n\
+\n\
+(define (fib n)\n\
+  (if (< n 2)\n\
+      n\n\
+      (+ (fib (- n 1)) (fib (- n 2)))))\n\
+\n\
+(define (quicksort lst)\n\
+  (if (null? lst)\n\
+      '()\n\
+      (let ((pivot (car lst))\n\
+            (rest (cdr lst)))\n\
+        (append (quicksort (filter (lambda (x) (< x pivot)) rest))\n\
+                (cons pivot (quicksort (filter (lambda (x) (>= x pivot)) rest)))))))\n\
+\n\
+;; comment\n\
+(display (factorial 5))\n\
+(display (map (lambda (x) (* x x)) '(1 2 3 4 5)))\n\
+(display (filter (lambda (x) (odd? x)) '(1 2 3 4 5)))\n\
+(display (fib 10))\n\
+(display (quicksort '(5 1 4 2 8)))\n\
+;; end of file";
 	
 	Token tokens[] = {
 		TOKEN_LPAREN,
