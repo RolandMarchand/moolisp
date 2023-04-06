@@ -8,10 +8,6 @@
 
 tgc_t gc;
 
-struct var eval(struct var expr);
-struct var progn(struct var list);
-struct var unless(struct var test, struct var then, struct var otherwise);
-
 int _main(int argc, char **argv);
 
 int main(int argc, char **argv)
@@ -27,8 +23,7 @@ int _main(int argc, char **argv)
 {
 	struct context context = get_context(argc, argv);
 	if (context.error) {
-		if (context.error_arg) {
-			fprintf(stderr, "error: %s '%s'\n",
+		if (context.error_arg) {			fprintf(stderr, "error: %s '%s'\n",
 				context.error, context.error_arg);
 			return EXIT_FAILURE;
 		}
@@ -47,29 +42,4 @@ int _main(int argc, char **argv)
 		repl();
 	}
 	return EXIT_SUCCESS;
-}
-
-struct var eval(struct var expr)
-{
-
-}
-
-struct var progn(struct var list)
-{
-	assert(list.type == VAR_CONS);
-	struct var ret;
-	do {
-		ret = eval(list.as.cons->x);
-		list = list.as.cons->y;
-	} while (!nilp(list));
-	return ret;
-}
-
-struct var unless(struct var test, struct var then, struct var otherwise)
-{
-	if (nilp(test)) {
-		return progn(then);
-	} else {
-		return progn(otherwise);
-	}
 }
