@@ -4,122 +4,122 @@
 
 extern tgc_t gc;
 
-static struct table *table_init(size_t size);
-static struct table *hashmap_increase_size(struct table *tbl);
+static struct hashmap *hashmap_increase_size(struct hashmap *tbl);
 static uint32_t murmur3_hash(const char *key, size_t len);
 static uint32_t murmur3_scramble(uint32_t k);
 
-struct table *table_init(size_t size)
+struct hashmap *hashmap_init(size_t size)
 {
-	struct table *tbl = tgc_alloc(&gc, sizeof(struct hashmap));
-	tbl->buckets = tgc_calloc(&gc, size, sizeof(struct bucket));
-	tbl->count = 0;
-	tbl->size = size;
-	return tbl;
-}
-
-struct hashmap hashmap_init(size_t size)
-{
-	return (struct hashmap){.table = table_init(size)};
+	struct hashmap *hashmap = tgc_alloc(&gc, sizeof(struct hashmap));
+	hashmap->buckets = tgc_calloc(&gc, size, sizeof(struct bucket));
+	hashmap->count = 0;
+	hashmap->size = size;
+	return hashmap;
 }
 
 struct var *hashmap_get(struct hashmap *hashmap, const char *key)
 {
-	assert(hashmap != NULL && hashmap->table != NULL);
+	assert(hashmap);
+	assert(key);
 
-	struct table *table = hashmap->table;
 	uint32_t hash = murmur3_hash(key, strlen(key));
-	int idx = hash % table->size;
+	int idx = hash % hashmap->size;
 
   next_bucket:
-	switch(table->buckets[idx].state) {
+	switch(hashmap->buckets[idx].state) {
 	case HASHMAP_STATE_EMPTY:
 		return NULL;
 	case HASHMAP_STATE_FILLED:
-		if (table->buckets[idx].hash == hash) {
-			return table->buckets[idx].symbol;
+		if (hashmap->buckets[idx].hash == hash) {
+			return hashmap->buckets[idx].symbol;
 		}
-		/* fall-through */
+		__attribute__((fallthrough));
 	case HASHMAP_STATE_ZOMBIE:
-		idx = (idx + 1) % table->size;
+		idx = (idx + 1) % hashmap->size;
 	}
 	goto next_bucket;
 }
 
-void hashmap_set(struct hashmap *hashmap, const char *key, struct var *symbol)
+void hashmap_set(struct hashmap **_hashmap, const char *key,
+			    struct var *symbol)
 {
-	assert(hashmap != NULL && hashmap->table != NULL);
+	assert(_hashmap);
+	assert(*_hashmap);
+	assert(key);
+	assert(symbol);
 
-	struct table *table = hashmap->table;
+	struct hashmap *hashmap = *_hashmap;
 	uint32_t hash = murmur3_hash(key, strlen(key));
-	uint32_t idx = hash % table->size;
+	uint32_t idx = hash % hashmap->size;
 
   next_bucket:
-	switch(table->buckets[idx].state) {
+	switch(hashmap->buckets[idx].state) {
 	case HASHMAP_STATE_ZOMBIE:
 	case HASHMAP_STATE_EMPTY:
-		if (table->count >= table->size * HASHMAP_MAX_LOAD) {
-			table = hashmap_increase_size(table);
-			hashmap->table = table;
+		if (hashmap->count >= hashmap->size * HASHMAP_MAX_LOAD) {
+			hashmap = hashmap_increase_size(hashmap);
 			goto next_bucket;
 		}
-		table->buckets[idx].hash = hash;
-		table->buckets[idx].state = HASHMAP_STATE_FILLED;
-		table->buckets[idx].symbol = symbol;
-		table->count++;
+		hashmap->buckets[idx].hash = hash;
+		hashmap->buckets[idx].state = HASHMAP_STATE_FILLED;
+		hashmap->buckets[idx].symbol = symbol;
+		hashmap->count++;
+		*_hashmap = hashmap;
 		return;
 	case HASHMAP_STATE_FILLED:
-		if (table->buckets[idx].hash == hash) {
-			table->buckets[idx].symbol = symbol;
+		if (hashmap->buckets[idx].hash == hash) {
+			hashmap->buckets[idx].symbol = symbol;
+			*_hashmap = hashmap;
 			return;
 		}
 	}
-	idx = (idx + 1) % table->size;
+	idx = (idx + 1) % hashmap->size;
 	goto next_bucket;
 }
 
 void hashmap_delete(struct hashmap *hashmap, const char *key)
 {
-	assert(hashmap != NULL && hashmap->table != NULL);
+	assert(hashmap);
+	assert(key);
 
-	struct table *table = hashmap->table;
 	uint32_t hash = murmur3_hash(key, strlen(key));
-	int idx = hash % table->size;
+	int idx = hash % hashmap->size;
 
   next_bucket:
-	switch(table->buckets[idx].state) {
+	switch(hashmap->buckets[idx].state) {
 	case HASHMAP_STATE_EMPTY:
 		return;
 	case HASHMAP_STATE_FILLED:
-		if (table->buckets[idx].hash == hash) {
-			table->buckets[idx].state = HASHMAP_STATE_ZOMBIE;
+		if (hashmap->buckets[idx].hash == hash) {
+			hashmap->buckets[idx].state = HASHMAP_STATE_ZOMBIE;
 			return;
 		}
-		/* fall-through */
+		__attribute__((fallthrough));
 	case HASHMAP_STATE_ZOMBIE:
-		idx = (idx + 1) % table->size;
+		idx = (idx + 1) % hashmap->size;
 	}
 	goto next_bucket;
 }
 
-struct table *hashmap_increase_size(struct table *tbl)
+struct hashmap *hashmap_increase_size(struct hashmap *hashmap)
 {
-	struct table *big_tbl = table_init(tbl->size * 2);
-	for (size_t i = 0; i < tbl->size; i++) {
-		if (tbl->buckets[i].state != HASHMAP_STATE_FILLED) {
+	struct hashmap *big_hashmap = hashmap_init(hashmap->size * 2);
+	for (size_t i = 0; i < hashmap->size; i++) {
+		if (hashmap->buckets[i].state != HASHMAP_STATE_FILLED) {
 			continue;
 		}
 
-		int big_idx = tbl->buckets[i].hash % big_tbl->size;
-		while (big_tbl->buckets[big_idx].state != HASHMAP_STATE_EMPTY) {
-			big_idx = (big_idx + 1) % big_tbl->size;
+		size_t big_idx = hashmap->buckets[i].hash % big_hashmap->size;
+		while (big_hashmap->buckets[big_idx].state
+		       != HASHMAP_STATE_EMPTY) {
+			big_idx = (big_idx + 1) % big_hashmap->size;
 		}
-		big_tbl->buckets[big_idx].hash = tbl->buckets[i].hash;
-		big_tbl->buckets[big_idx].state = HASHMAP_STATE_FILLED;
-		big_tbl->buckets[big_idx].symbol = tbl->buckets[i].symbol;
-		big_tbl->count++;
+		big_hashmap->buckets[big_idx].hash = hashmap->buckets[i].hash;
+		big_hashmap->buckets[big_idx].state = HASHMAP_STATE_FILLED;
+		big_hashmap->buckets[big_idx].symbol = hashmap->buckets[i].symbol;
+		big_hashmap->count++;
 	}
-	return big_tbl;
+	return big_hashmap;
 }
 
 uint32_t murmur3_hash(const char *key, size_t len)
