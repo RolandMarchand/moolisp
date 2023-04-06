@@ -4,7 +4,7 @@
 extern tgc_t gc;
 
 static struct var *create_var(const struct var *v);
-static bool compare_functions(const struct var *f1, const struct var *f2);
+static bool compare_closures(const struct var *f1, const struct var *f2);
 static bool compare_cons(const struct var *c1, const struct var *c2);
 
 bool _var2bool(const struct var *v)
@@ -21,19 +21,27 @@ struct var *create_var(const struct var *v)
 	return ret;
 }
 
-struct var *lambda(struct var *param_cnt, struct var *param_names,
-		   struct var *body)
+struct var *c_function(struct var *(*f)(struct var *))
 {
-	assert(param_cnt);
-	assert(param_names);
-	assert(body);
-	struct function *f = tgc_alloc(&gc, sizeof(struct function));
-	f->param_cnt = param_cnt;
-	f->param_names = param_names;
-	f->body = body;
+	assert(f);
 	return create_var(&(struct var){
-			.type = VAR_FUNCTION,
-			.as.function = f
+			.type = VAR_C_FUNCTION,
+			.as.c_function = f
+		});
+}
+
+struct var *closure(struct env *env, struct var *params, struct var *body)
+{
+	assert(env);
+	assert(params);
+	assert(body);
+	struct closure *c = tgc_alloc(&gc, sizeof(struct closure));
+	c->env = env;
+	c->params = params;
+	c->body = body;
+	return create_var(&(struct var){
+			.type = VAR_CLOSURE,
+			.as.closure = c
 		});
 }
 
@@ -147,18 +155,17 @@ struct var *eq(const struct var *a, const struct var *b)
 	return nil();
 }
 
-bool compare_functions(const struct var *_f1, const struct var *_f2)
+bool compare_closures(const struct var *_c1, const struct var *_c2)
 {
-	assert(_f1);
-	assert(_f2);
-	assert(_var2bool(functionp(_f1)));
-	assert(_var2bool(functionp(_f2)));
-	struct function *f1 = _f1->as.function;
-	struct function *f2 = _f2->as.function;
+	assert(_c1);
+	assert(_c2);
+	assert(_var2bool(closurep(_c1)));
+	assert(_var2bool(closurep(_c2)));
+	struct closure *c1 = _c1->as.closure;
+	struct closure *c2 = _c2->as.closure;
 
-	return _var2bool(equal(f1->param_cnt, f2->param_cnt))
-		&& _var2bool(equal(f1->param_names, f2->param_names))
-		&& _var2bool(equal(f1->body, f2->body));
+	return _var2bool(equal(c1->params, c2->params))
+		&& _var2bool(equal(c1->body, c2->body));
 }
 
 bool compare_cons(const struct var *c1, const struct var *c2)
@@ -194,8 +201,11 @@ struct var *equal(const struct var *a, const struct var *b)
 	case VAR_STRING:
 		_equal = strcmp(a->as.string, b->as.string) == 0;
 		break;
-	case VAR_FUNCTION:
-		_equal = compare_functions(a, b);
+	case VAR_C_FUNCTION:
+		_equal = a->as.c_function == b->as.c_function;
+		break;
+	case VAR_CLOSURE:
+		_equal = compare_closures(a, b);
 		break;
 	case VAR_CONS:
 		_equal = compare_cons(a, b);
@@ -210,20 +220,65 @@ struct var *equal(const struct var *a, const struct var *b)
 	return nil();
 }
 
-struct var *atom(const struct var *v)
+struct var *atom(const struct var *a)
 {
-	if (v->type != VAR_CONS) {
+	if (a->type != VAR_CONS) {
 		return t();
 	}
-	return nilp(v);
+	return nilp(a);
+}
+
+struct var *stringp(const struct var *s)
+{
+	if (s->type == VAR_STRING) {
+		return t();
+	}
+	return nil();
+}
+
+struct var *numberp(const struct var *n)
+{
+	assert(n);
+	if (n->type == VAR_NUMBER) {
+		return t();
+	}
+	return nil();
+}
+
+struct var *symbolp(const struct var *s)
+{
+	assert(s);
+	if (s->type == VAR_SYMBOL) {
+		return t();
+	}
+	return nil();
+}
+
+struct var *c_functionp(const struct var *f)
+{
+	assert(f);
+	if (f->type == VAR_C_FUNCTION) {
+		return t();
+	}
+	return nil();
+}
+
+struct var *closurep(const struct var *c)
+{
+	assert(c);
+	if (c->type == VAR_CLOSURE) {
+		return t();
+	}
+	return nil();
 }
 
 struct var *functionp(const struct var *f)
 {
-	if (f->type == VAR_FUNCTION) {
+	assert(f);
+	if (f->type == VAR_C_FUNCTION || f->type == VAR_CLOSURE) {
 		return t();
 	}
-	return nil();	
+	return nil();
 }
 
 /* struct var *dolist(const struct var *list, struct var *(f)(const struct var *)) */

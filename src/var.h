@@ -1,13 +1,15 @@
 #pragma once
 
 #include "common.h"
+#include "env.h"
 
 typedef enum {
 	VAR_CONS = 0,
 	VAR_SYMBOL,
 	VAR_NUMBER,
 	VAR_STRING,
-	VAR_FUNCTION,
+	VAR_C_FUNCTION,
+	VAR_CLOSURE
 } VarType;
 
 struct var {
@@ -17,7 +19,8 @@ struct var {
 		char *symbol;
 		double number;
 		struct cons *cons;
-		struct function *function;
+		struct var *(*c_function)(struct var *);
+		struct closure *closure;
 	} as;
 };
 
@@ -26,9 +29,9 @@ struct cons {
 	struct var *y;
 };
 
-struct function {
-	struct var *param_cnt;
-	struct var *param_names;
+struct closure {
+	struct env *env;
+	struct var *params;
 	struct var *body;
 };
 
@@ -38,19 +41,23 @@ struct var *quote(struct var *expr);
 struct var *string(const char *string);
 struct var *symbol(const char *symbol);
 struct var *cons(struct var *x, struct var *y);
-struct var *lambda(struct var *param_cnt, struct var *param_names,
-		   struct var *body);
-
+struct var *closure(struct env *, struct var *params, struct var *body);
+struct var *c_function(struct var *(*f)(struct var *));
 struct var *car(const struct var *list);
 struct var *cdr(const struct var *list);
 /* struct var *dolist(const struct var *list, struct var *(f)(const struct var *)); */
-struct var *atom(const struct var *v);
-struct var *functionp(const struct var *f);
-struct var *not(const struct var *v);
+struct var *atom(const struct var *);
+struct var *stringp(const struct var *);
+struct var *numberp(const struct var *);
+struct var *symbolp(const struct var *);
+struct var *c_functionp(const struct var *);
+struct var *closurep(const struct var *);
+struct var *functionp(const struct var *);
+struct var *not(const struct var *);
 struct var *eq(const struct var *a, const struct var *b);
 struct var *equal(const struct var *a, const struct var *b);
-struct var *nilp(const struct var *v);
-struct var *listp(const struct var *v);
-struct var *print(const struct var *v);
+struct var *nilp(const struct var *);
+struct var *listp(const struct var *);
+struct var *print(const struct var *);
 
-bool _var2bool(const struct var *v);
+bool _var2bool(const struct var *);

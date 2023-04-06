@@ -59,25 +59,21 @@ void test1()
 	assert(q->type == VAR_CONS);
 	assert(q->as.cons == NULL);
 
-	struct var *param_cnt = number(2);
-	struct var *param_names = cons(symbol("x"), cons(symbol("y"), nil()));
+	struct env *env = NULL;
+	struct var *params = cons(symbol("x"), cons(symbol("y"), nil()));
 	struct var *body = cons(symbol("+"),
 				cons(symbol("x"),
 				     cons(symbol("y"), nil())));
-	struct var *func = lambda(param_cnt, param_names, body);
-	assert(func->type == VAR_FUNCTION);
-	assert(func->as.function->param_cnt == param_cnt);
-	assert(func->as.function->param_names == param_names);
-	assert(func->as.function->body == body);
+	struct var *cl = closure(env, params, body);
+	assert(cl->type == VAR_CLOSURE);
+	assert(cl->as.closure->params == params);
+	assert(cl->as.closure->body == body);
 
-	num = number(0);
-	struct var *n1 = nil();
-	struct var *n2 = nil();
-	func = lambda(num, n1, n2);
-	assert(func->type == VAR_FUNCTION);
-	assert(func->as.function->param_cnt == num);
-	assert(func->as.function->param_names == n1);
-	assert(func->as.function->body == n2);
+	struct var *dummy(struct var *);
+
+	struct var *func = c_function(dummy);
+	assert(func->type == VAR_C_FUNCTION);
+	assert(func->as.c_function == dummy);
 }
 
 void test2()
@@ -88,7 +84,9 @@ void test2()
 	struct var *q = quote(sym);
 	struct var *_nil = nil();
 	struct var *c = cons(num, cons(str, _nil));
-	struct var *func = lambda(number(0), nil(), nil());
+	struct var *cl = closure(NULL, nil(), nil());
+	struct var *dummy(struct var *);
+	struct var *func = c_function(dummy);
 
 	assert(car(c) == num);
 	assert(car(cdr(c)) == str);
@@ -101,7 +99,35 @@ void test2()
 	assert(!_var2bool(atom(q)));
 	assert(_var2bool(atom(_nil)));
 	assert(!_var2bool(atom(c)));
+	assert(_var2bool(atom(cl)));
 	assert(_var2bool(atom(func)));
+
+	assert(_var2bool(numberp(num)));
+	assert(!_var2bool(numberp(str)));
+	assert(!_var2bool(numberp(sym)));
+	assert(!_var2bool(numberp(q)));
+	assert(!_var2bool(numberp(_nil)));
+	assert(!_var2bool(numberp(c)));
+	assert(!_var2bool(numberp(cl)));
+	assert(!_var2bool(numberp(func)));
+
+	assert(!_var2bool(stringp(num)));
+	assert(_var2bool(stringp(str)));
+	assert(!_var2bool(stringp(sym)));
+	assert(!_var2bool(stringp(q)));
+	assert(!_var2bool(stringp(_nil)));
+	assert(!_var2bool(stringp(c)));
+	assert(!_var2bool(stringp(cl)));
+	assert(!_var2bool(stringp(func)));
+
+	assert(!_var2bool(symbolp(num)));
+	assert(!_var2bool(symbolp(str)));
+	assert(_var2bool(symbolp(sym)));
+	assert(!_var2bool(symbolp(q)));
+	assert(!_var2bool(symbolp(_nil)));
+	assert(!_var2bool(symbolp(c)));
+	assert(!_var2bool(symbolp(cl)));
+	assert(!_var2bool(symbolp(func)));
 
 	assert(!_var2bool(functionp(num)));
 	assert(!_var2bool(functionp(str)));
@@ -109,6 +135,7 @@ void test2()
 	assert(!_var2bool(functionp(q)));
 	assert(!_var2bool(functionp(_nil)));
 	assert(!_var2bool(functionp(c)));
+	assert(_var2bool(functionp(cl)));
 	assert(_var2bool(functionp(func)));
 
 	assert(!_var2bool(nilp(num)));
@@ -117,6 +144,7 @@ void test2()
 	assert(!_var2bool(nilp(q)));
 	assert(_var2bool(nilp(_nil)));
 	assert(!_var2bool(nilp(c)));
+	assert(!_var2bool(nilp(cl)));
 	assert(!_var2bool(nilp(func)));
 
 	assert(_var2bool(not(nilp(num))));
@@ -125,6 +153,7 @@ void test2()
 	assert(_var2bool(not(nilp(q))));
 	assert(!_var2bool(not(nilp(_nil))));
 	assert(_var2bool(not(nilp(c))));
+	assert(_var2bool(not(nilp(cl))));
 	assert(_var2bool(not(nilp(func))));
 
 	assert(_var2bool(eq(num, num)));
@@ -133,6 +162,7 @@ void test2()
 	assert(_var2bool(eq(q, q)));
 	assert(!_var2bool(eq(_nil, c)));
 	assert(!_var2bool(eq(c, _nil)));
+	assert(_var2bool(eq(cl, cl)));
 	assert(_var2bool(eq(func, func)));
 
 	assert(!_var2bool(listp(num)));
@@ -141,6 +171,7 @@ void test2()
 	assert(_var2bool(listp(q)));
 	assert(_var2bool(listp(_nil)));
 	assert(_var2bool(listp(c)));
+	assert(!_var2bool(listp(cl)));
 	assert(!_var2bool(listp(func)));
 
 	assert(_var2bool(equal(num, number(0))));
@@ -150,6 +181,7 @@ void test2()
 	assert(_var2bool(equal(_nil, nil())));
 	assert(_var2bool(equal(c, cons(number(0),
 				       cons(string("string"), nil())))));
+	/* here */
 	assert(_var2bool(equal(func, lambda(number(0), nil(), nil()))));
 
 	assert(_var2bool(equal(num, num)));
