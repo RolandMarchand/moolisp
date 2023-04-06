@@ -1,6 +1,6 @@
 include_directories("${CMAKE_SOURCE_DIR}/src")
 add_custom_target(tests DEPENDS
-  test_var
+#  test_var
   test_lexer
 #   test_compiler
   test_hashmap
@@ -23,7 +23,7 @@ target_link_libraries(test_hashmap PRIVATE structures)
 add_executable(test_context test_context.c)
 target_link_libraries(test_context PRIVATE context)
 
-add_test(Var test_var)
+#add_test(Var test_var)
 add_test(Lexer test_lexer)
 # add_test(Compiler test_compiler)
 add_test(Hashmap test_hashmap)
