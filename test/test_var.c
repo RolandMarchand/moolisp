@@ -1,22 +1,27 @@
 #include "common.h"
 #include "var.h"
+#include "env.h"
 
 tgc_t gc;
+struct env *dummy_env;
 
 void _main(void);
 void test1();
 void test2();
+struct var *dummy_func(struct var *v) {return v;}
+struct var *dummy_func2(struct var *v) {return v;}
 
 int main(void)
 {
-	volatile void *dummy;
-	tgc_start(&gc, &dummy);
+	volatile void *dummy_var;
+	tgc_start(&gc, &dummy_var);
 	_main();
 	tgc_stop(&gc);
 }
 
 void _main(void)
 {
+	dummy_env = env_make(NULL, nil(), nil());
 	test1();
 	test2();
 }
@@ -59,21 +64,18 @@ void test1()
 	assert(q->type == VAR_CONS);
 	assert(q->as.cons == NULL);
 
-	struct env *env = NULL;
 	struct var *params = cons(symbol("x"), cons(symbol("y"), nil()));
 	struct var *body = cons(symbol("+"),
 				cons(symbol("x"),
 				     cons(symbol("y"), nil())));
-	struct var *cl = closure(env, params, body);
+	struct var *cl = closure(dummy_env, params, body);
 	assert(cl->type == VAR_CLOSURE);
 	assert(cl->as.closure->params == params);
 	assert(cl->as.closure->body == body);
 
-	struct var *dummy(struct var *);
-
-	struct var *func = c_function(dummy);
+	struct var *func = c_function(dummy_func);
 	assert(func->type == VAR_C_FUNCTION);
-	assert(func->as.c_function == dummy);
+	assert(func->as.c_function == dummy_func);
 }
 
 void test2()
@@ -84,9 +86,8 @@ void test2()
 	struct var *q = quote(sym);
 	struct var *_nil = nil();
 	struct var *c = cons(num, cons(str, _nil));
-	struct var *cl = closure(NULL, nil(), nil());
-	struct var *dummy(struct var *);
-	struct var *func = c_function(dummy);
+	struct var *cl = closure(dummy_env, nil(), nil());
+	struct var *func = c_function(dummy_func);
 
 	assert(car(c) == num);
 	assert(car(cdr(c)) == str);
@@ -176,13 +177,13 @@ void test2()
 
 	assert(_var2bool(equal(num, number(0))));
 	assert(_var2bool(equal(str, string("string"))));
-	assert(_var2bool(equal(sym, symbol("symbol"))));
-	assert(_var2bool(equal(q, quote(symbol("symbol")))));
+	assert(!_var2bool(equal(sym, symbol("symbol"))));
+	assert(!_var2bool(equal(q, quote(symbol("symbol")))));
 	assert(_var2bool(equal(_nil, nil())));
 	assert(_var2bool(equal(c, cons(number(0),
 				       cons(string("string"), nil())))));
-	/* here */
-	assert(_var2bool(equal(func, lambda(number(0), nil(), nil()))));
+	assert(!_var2bool(equal(cl, closure(dummy_env, nil(), nil()))));
+	assert(_var2bool(equal(func, c_function(dummy_func))));
 
 	assert(_var2bool(equal(num, num)));
 	assert(_var2bool(equal(str, str)));
@@ -190,6 +191,7 @@ void test2()
 	assert(_var2bool(equal(q, q)));
 	assert(_var2bool(equal(_nil, _nil)));
 	assert(_var2bool(equal(c, c)));
+	assert(_var2bool(equal(cl, cl)));
 	assert(_var2bool(equal(func, func)));
 
 	assert(!_var2bool(equal(num, string("not equal"))));
@@ -198,7 +200,8 @@ void test2()
 	assert(!_var2bool(equal(q, num)));
 	assert(!_var2bool(equal(_nil, func)));
 	assert(!_var2bool(equal(c, cons(number(0), _nil))));
-	assert(!_var2bool(equal(func, lambda(number(0), nil(), number(0)))));
+	assert(!_var2bool(equal(cl, closure(dummy_env, t(), t()))));
+	assert(!_var2bool(equal(func, c_function(dummy_func2))));
 
 	assert(!_var2bool(equal(num, number(1))));
 	assert(!_var2bool(equal(str, string("different string"))));
@@ -206,5 +209,6 @@ void test2()
 	assert(!_var2bool(equal(q, quote(str))));
 	assert(!_var2bool(equal(_nil, number(1))));
 	assert(!_var2bool(equal(c, cons(number(0), cons(sym, nil())))));
+	assert(!_var2bool(equal(cl, t())));
 	assert(!_var2bool(equal(func, nil())));
 }

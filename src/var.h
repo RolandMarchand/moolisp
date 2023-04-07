@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include "env.h"
+#define t() number(1)
 
 typedef enum {
 	VAR_CONS = 0,
@@ -29,6 +29,7 @@ struct cons {
 	struct var *y;
 };
 
+#include "env.h"
 struct closure {
 	struct env *env;
 	struct var *params;
@@ -45,7 +46,6 @@ struct var *closure(struct env *, struct var *params, struct var *body);
 struct var *c_function(struct var *(*f)(struct var *));
 struct var *car(const struct var *list);
 struct var *cdr(const struct var *list);
-/* struct var *dolist(const struct var *list, struct var *(f)(const struct var *)); */
 struct var *atom(const struct var *);
 struct var *stringp(const struct var *);
 struct var *numberp(const struct var *);

@@ -5,7 +5,7 @@ add_library(compiler parser.c)
 target_link_libraries(compiler PRIVATE lexer PUBLIC structures)
 target_include_directories(compiler PRIVATE "${CMAKE_SOURCE_DIR}/src")
 
-add_library(structures hashmap.c var.c)
+add_library(structures hashmap.c var.c env.c)
 target_link_libraries(structures PUBLIC tgc)
 
 add_library(context context.c)
