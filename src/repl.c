@@ -33,7 +33,12 @@ Copyright (c) 2023 Roland Marchand roland.marchand@protonmail.com\n\n",
 		}
 		add_history(input);
 		struct var v = parse(input);
-		print(&v);
+		struct var *tail = &v;
+		while (_var2bool(tail)) {
+			print(car(tail));
+			printf("\n");
+			tail = cdr(tail);
+		}
 	}
 	printf("Bye!\n");
 }

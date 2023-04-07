@@ -29,7 +29,7 @@ struct var *parse_string(struct token str)
 struct var *parse_quote(struct parser *parser)
 {
 	struct var *next_expr = parse_expression(parser);
-	if (nilp(next_expr)) {
+	if (_var2bool(nilp(next_expr))) {
 		fprintf(stderr,
 			"error:%lu: expected expression, received '%s'\n",
 			parser->lexer.input.line,
@@ -43,7 +43,7 @@ struct var *parse_list(struct parser *parser)
 	struct var *list = nil();
 	struct var *list_tail = list;
 	while (lexer_peek(&parser->lexer).type != TOKEN_RPAREN) {
-		list_tail = cons(parse_expression(parser), nil());
+		*list_tail = *cons(parse_expression(parser), nil());
 		list_tail = list_tail->as.cons->y;
 	}
 	lexer_scan(&parser->lexer);
@@ -92,7 +92,7 @@ struct var parse(char *data)
 	memset(&parser.cons, 0, sizeof(struct var));
 	struct var *tail = &parser.cons;
 	while (lexer_peek(&parser.lexer).type != TOKEN_EOF) {
-		tail = cons(parse_expression(&parser), nil());
+		*tail = *cons(parse_expression(&parser), nil());
 		tail = tail->as.cons->y;
 	}        
 	return parser.cons;

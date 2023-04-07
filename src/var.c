@@ -270,7 +270,7 @@ void print_list(const struct var *list)
 {
 	assert(_var2bool(listp(list)));
 	printf("(");
-	while (!_var2bool(nilp(list))) {
+	while (_var2bool(list)) {
 		print(car(list));
 		list = cdr(list);
 		if (_var2bool(nilp(list))) {
@@ -293,10 +293,12 @@ struct var *print(const struct var *v)
 		printf("%g", v->as.number);
 		break;
 	case VAR_STRING:
-		printf("%s", v->as.string);
+		printf("\"%s\"", v->as.string);
 		break;
 	case VAR_CONS:
-		if (strcmp(car(v)->as.symbol, "quote") == 0) {
+		if (_var2bool(v)
+		    && _var2bool(symbolp(car(v)))
+		    && strcmp(car(v)->as.symbol, "quote") == 0) {
 			printf("'");
 			print(car(cdr(v)));
 			break;
