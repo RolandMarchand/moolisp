@@ -28,7 +28,7 @@ struct var *hashmap_get(struct hashmap *hashmap, const char *key)
   next_bucket:
 	switch(hashmap->buckets[idx].state) {
 	case HASHMAP_STATE_EMPTY:
-		return NULL;
+		return nil();
 	case HASHMAP_STATE_FILLED:
 		if (hashmap->buckets[idx].hash == hash) {
 			return hashmap->buckets[idx].symbol;

@@ -19,7 +19,7 @@ void _main(void)
 	struct hashmap *hm = hashmap_init(4);
 	struct var a, b, c, d, e, f, s;
 
-	assert(hashmap_get(hm, "false") == NULL);
+	assert(!_var2bool(hashmap_get(hm, "false")));
 
 	hashmap_set(&hm, "set", &s);
 	assert(hashmap_get(hm, "set") == &s);
@@ -33,16 +33,16 @@ void _main(void)
 	hashmap_delete(hm, "set");
 	hashmap_set(&hm, "4", &e);
 	hashmap_set(&hm, "5", &f);
-	assert(hashmap_get(hm, "set") == NULL);
+	assert(!_var2bool(hashmap_get(hm, "set")));
 
 	hashmap_delete(hm, "0");
 	hashmap_delete(hm, "2");
 	hashmap_delete(hm, "4");
 	hashmap_delete(hm, "5");
-	assert(hashmap_get(hm, "0") == NULL);
+	assert(!_var2bool(hashmap_get(hm, "0")));
 	assert(hashmap_get(hm, "1") == &b);
-	assert(hashmap_get(hm, "2") == NULL);
+	assert(!_var2bool(hashmap_get(hm, "2")));
 	assert(hashmap_get(hm, "3") == &d);
-	assert(hashmap_get(hm, "4") == NULL);
-	assert(hashmap_get(hm, "5") == NULL);
+	assert(!_var2bool(hashmap_get(hm, "4")));
+	assert(!_var2bool(hashmap_get(hm, "5")));
 }
