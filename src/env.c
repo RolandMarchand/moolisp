@@ -36,13 +36,13 @@ struct env *env_find(struct env *current, struct var *symbol)
 	assert(symbol);
 	struct var *val = hashmap_get(current->data, symbol->as.symbol);
 
-	if (val) {
+	if (_var2bool(val)) {
 		return current;
 	}
 	if (current->outer) {
 		return env_find(current->outer, symbol);
 	}
-	assert(false);
+	return NULL;
 }
 
 struct var *env_get(struct env *current, struct var *symbol)
@@ -50,6 +50,8 @@ struct var *env_get(struct env *current, struct var *symbol)
 	assert(current);
 	assert(symbol);
 	struct env *env = env_find(current, symbol);
-	assert(env);
-	return hashmap_get(env->data, symbol->as.symbol);
+	if (env) {
+		return hashmap_get(env->data, symbol->as.symbol);
+	}
+	return nil();
 }
