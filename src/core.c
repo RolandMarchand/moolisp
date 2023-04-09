@@ -4,6 +4,29 @@
 static void print_list(const struct var *list);
 static bool compare_cons(const struct var *c1, const struct var *c2);
 
+struct var *curried_car(const struct var *list)
+{
+	assert(list);
+	assert(!_var2bool(cdr(list)));
+	assert(_var2bool(listp(car(list))));
+	return car(car(list));
+}
+
+struct var *curried_cdr(const struct var *list)
+{
+	assert(list);
+	assert(!_var2bool(cdr(list)));
+	assert(_var2bool(listp(car(list))));
+	return cdr(car(list));
+}
+
+struct var *curried_cons(const struct var *list)
+{
+	assert(list);
+	assert(length(cons((struct var *)list, nil()))->as.number == 2);
+	return cons(car(list), car(cdr(list)));
+}
+
 struct var *add(const struct var *list)
 {
 	assert(list);
@@ -100,7 +123,7 @@ struct var *greater_than(const struct var *list)
 	while (_var2bool(cdr(list))) {
 		assert(numberp(car(list)));
 		assert(numberp(cdr(list)));
-		if (car(list)->as.number <= cdr(list)->as.number) {
+		if (car(list)->as.number <= car(cdr(list))->as.number) {
 			return nil();
 		}
 		list = cdr(list);
@@ -115,7 +138,7 @@ struct var *lesser_than(const struct var *list)
 	while (_var2bool(cdr(list))) {
 		assert(numberp(car(list)));
 		assert(numberp(cdr(list)));
-		if (car(list)->as.number >= cdr(list)->as.number) {
+		if (car(list)->as.number >= car(cdr(list))->as.number) {
 			return nil();
 		}
 		list = cdr(list);
@@ -127,14 +150,14 @@ struct var *greater_equal(const struct var *list)
 {
 	assert(list);
 	assert(listp(list));
-	return nilp(lesser_than(list));
+	return !_var2bool(cdr(cdr(list))) ? t() : nilp(lesser_than(list));
 }
 
 struct var *lesser_equal(const struct var *list)
 {
 	assert(list);
 	assert(listp(list));
-	return nilp(greater_than(list));
+	return !_var2bool(cdr(cdr(list))) ? t() : nilp(greater_than(list));
 }
 
 struct var *print(const struct var *v)
@@ -180,6 +203,14 @@ void print_list(const struct var *list)
 	assert(list);
 	assert(_var2bool(listp(list)));
 	printf("(");
+	/* dotted list */
+	if (_var2bool(cdr(list)) && !_var2bool(listp(cdr(list)))) {
+		print(car(list));
+		printf(" . ");
+		print(cdr(list));
+		printf(")");
+		return;
+	} 
 	while (_var2bool(list)) {
 		print(car(list));
 		list = cdr(list);

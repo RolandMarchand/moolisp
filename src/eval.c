@@ -1,4 +1,5 @@
 #include "eval.h"
+#include "core.h"
 
 static struct var *eval_list(struct env *env, struct var *list);
 
@@ -29,12 +30,32 @@ struct var *eval(struct env *env, struct var *ast)
 
 struct var *eval_list(struct env *env, struct var *list)
 {
+	assert(env);
+	assert(list);
+	assert(_var2bool(listp(list)));
+
+	/* special functions */
 	if (!_var2bool(list)) {
 		return list;
 	}
+	/* TODO: handle special cases better */
 	if (_quotep(list)) {
 		return car(cdr(list));
 	}
+	if (_var2bool(symbolp(car(list)))) {
+		if (strcmp(car(list)->as.symbol, "lambda") == 0) {
+			assert(length(cons(cdr(list), nil()))->as.number == 2);
+			return closure(env, car(cdr(list)), car(cdr(cdr(list))));
+		}
+		if (strcmp(car(list)->as.symbol, "define") == 0) {
+			assert(length(cons(cdr(list), nil()))->as.number == 2);
+			assert(_var2bool(symbolp(car(cdr(list)))));
+			env_set(env, car(cdr(list)), eval(env, car(cdr(cdr(list)))));
+			return car(cdr(list));
+		}
+	}
+	/* TODO: handle and, or, cond short-circuiting */
+
 	/* eval contents */
 	struct var *evaluated_list;
 	struct var **tail = &evaluated_list;
@@ -44,5 +65,5 @@ struct var *eval_list(struct env *env, struct var *list)
 		list = cdr(list);
 	} while (_var2bool(list));
 
-	return evaluated_list;
+	return apply(evaluated_list);
 }

@@ -1,6 +1,9 @@
 #include "common.h"
 #include "var.h"
 
+struct var *curried_cons(const struct var *list);
+struct var *curried_car(const struct var *list);
+struct var *curried_cdr(const struct var *list);
 struct var *add(const struct var *list);
 struct var *substract(const struct var *list);
 struct var *multiply(const struct var *list);
