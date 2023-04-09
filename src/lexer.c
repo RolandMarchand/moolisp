@@ -35,7 +35,7 @@ void lexer_init(struct lexer *lexer, char *input, unsigned int position)
 	lexer->input.length = strlen(input);
 	assert(position <= lexer->input.length);
 	
-	lexer->input.data = tgc_alloc(&gc, lexer->input.length * sizeof(char));
+	lexer->input.data = tgc_alloc(&gc, lexer->input.length * sizeof(char) + 1);
 	strcpy(lexer->input.data, input);
 
 	lexer->input.line = 1;
