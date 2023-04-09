@@ -58,6 +58,7 @@ void hashmap_set(struct hashmap **_hashmap, const char *key,
 	case HASHMAP_STATE_EMPTY:
 		if (hashmap->count >= hashmap->size * HASHMAP_MAX_LOAD) {
 			hashmap = hashmap_increase_size(hashmap);
+			idx = hash % hashmap->size;
 			goto next_bucket;
 		}
 		hashmap->buckets[idx].hash = hash;
