@@ -1,7 +1,141 @@
+#include "eval.h"
 #include "core.h"
 
 static void print_list(const struct var *list);
 static bool compare_cons(const struct var *c1, const struct var *c2);
+
+struct var *add(const struct var *list)
+{
+	assert(list);
+	assert(listp(list));
+	double total = 0;
+	while (_var2bool(list)) {
+		assert(_var2bool(numberp(car(list))));
+		total += car(list)->as.number;
+		list = cdr(list);
+	}
+	return number(total);
+}
+
+struct var *multiply(const struct var *list)
+{
+	assert(list);
+	assert(listp(list));
+	double total = 1;
+	while (_var2bool(list)) {
+		assert(_var2bool(numberp(car(list))));
+		total *= car(list)->as.number;
+		list = cdr(list);
+	}
+	return number(total);
+}
+
+struct var *substract(const struct var *list)
+{
+	assert(list);
+	assert(listp(list));
+	assert(_var2bool(list));
+	assert(numberp(car(list)));
+
+	if (!_var2bool(cdr(list))) {
+		return number(-car(list)->as.number);
+	}
+
+	double total = car(list)->as.number;
+	list = cdr(list);
+	do {
+		assert(_var2bool(numberp(car(list))));
+		total -= car(list)->as.number;
+		list = cdr(list);
+	} while (_var2bool(list));
+	return number(total);
+}
+
+struct var *divide(const struct var *list)
+{
+	assert(list);
+	assert(listp(list));
+	assert(_var2bool(list));
+	assert(numberp(car(list)));
+
+	if (!_var2bool(cdr(list))) {
+		return number(1.0 / car(list)->as.number);
+	}
+
+	double total = car(list)->as.number;
+	list = cdr(list);
+	do {
+		assert(_var2bool(numberp(car(list))));
+		total /= car(list)->as.number;
+		list = cdr(list);
+	} while (_var2bool(list));
+	return number(total);
+}
+
+struct var *number_equal(const struct var *list)
+{
+	assert(list);
+	assert(listp(list));
+	if (!_var2bool(list)) {
+		return t();
+	}
+	assert(numberp(car(list)));
+	double n = car(list)->as.number;
+	list = cdr(list);
+
+	while (_var2bool(list)) {
+		assert(numberp(car(list)));
+		if (n != car(list)->as.number) {
+			return nil();
+		}
+		list = cdr(list);
+	}
+	return t();
+}
+
+struct var *greater_than(const struct var *list)
+{
+	assert(list);
+	assert(listp(list));
+	while (_var2bool(cdr(list))) {
+		assert(numberp(car(list)));
+		assert(numberp(cdr(list)));
+		if (car(list)->as.number <= cdr(list)->as.number) {
+			return nil();
+		}
+		list = cdr(list);
+	}
+	return t();
+}
+
+struct var *lesser_than(const struct var *list)
+{
+	assert(list);
+	assert(listp(list));
+	while (_var2bool(cdr(list))) {
+		assert(numberp(car(list)));
+		assert(numberp(cdr(list)));
+		if (car(list)->as.number >= cdr(list)->as.number) {
+			return nil();
+		}
+		list = cdr(list);
+	}
+	return t();
+}
+
+struct var *greater_equal(const struct var *list)
+{
+	assert(list);
+	assert(listp(list));
+	return nilp(lesser_than(list));
+}
+
+struct var *lesser_equal(const struct var *list)
+{
+	assert(list);
+	assert(listp(list));
+	return nilp(greater_than(list));
+}
 
 struct var *print(const struct var *v)
 {
@@ -28,7 +162,7 @@ struct var *print(const struct var *v)
 		printf("<SYSTEM-FUNCTION %p>", v->as.c_function);
 		break;
 	case VAR_CLOSURE:
-		printf("<FUNCTION ");
+		printf("<FUNCTION %p ", v);
 		print(v->as.closure->params);
 		printf(" ");
 		print(v->as.closure->body);
@@ -43,6 +177,7 @@ struct var *print(const struct var *v)
 
 void print_list(const struct var *list)
 {
+	assert(list);
 	assert(_var2bool(listp(list)));
 	printf("(");
 	while (_var2bool(list)) {
@@ -56,18 +191,6 @@ void print_list(const struct var *list)
 		}
 	}
 	printf(")");
-}
-
-struct var *add(struct var *list)
-{
-	double total = 0;
-	assert(listp(list));
-	while (_var2bool(list)) {
-		assert(_var2bool(numberp(car(list))));
-		total += car(list)->as.number;
-		list = cdr(list);
-	}
-	return number(total);
 }
 
 struct var *eq(const struct var *list)
@@ -84,6 +207,8 @@ struct var *eq(const struct var *list)
 
 bool compare_cons(const struct var *c1, const struct var *c2)
 {
+	assert(c1);
+	assert(c2);
 	bool c1_nil = !_var2bool(c1);
 	bool c2_nil = !_var2bool(c2);
 	if ((c1_nil ^ c2_nil) != 0) {
@@ -92,8 +217,10 @@ bool compare_cons(const struct var *c1, const struct var *c2)
 	if (c1_nil) {
 		return true;
 	}
-	return _var2bool(equal(cons(c1->as.cons->x, cons(c2->as.cons->x, nil()))))
-		&& _var2bool(equal(cons(c1->as.cons->y, cons(c2->as.cons->y, nil()))));
+	return _var2bool(equal(cons(c1->as.cons->x,
+				    cons(c2->as.cons->x, nil()))))
+		&& _var2bool(equal(cons(c1->as.cons->y,
+					cons(c2->as.cons->y, nil()))));
 }
 
 struct var *equal(const struct var *list)
@@ -143,7 +270,7 @@ struct var *equal(const struct var *list)
 	return t();
 }
 
-struct var *length(struct var *list)
+struct var *length(const struct var *list)
 {
 	assert(list);
 	assert(_var2bool(listp(list)));
@@ -156,4 +283,21 @@ struct var *length(struct var *list)
 		list = cdr(list);
 	}
 	return number(len);
+}
+
+struct var *apply(const struct var *list)
+{
+	assert(list);
+	assert(_var2bool(car(list)));
+	assert(_var2bool(c_functionp(car(list)))
+	       || _var2bool(closurep(car(list))));
+	if (_var2bool(c_functionp(car(list)))) {
+		return (*car(list)->as.c_function)(cdr(list));
+	}
+	struct closure *cl = car(list)->as.closure;
+	struct var *args = cdr(list);
+	assert(length(cons(cl->params, nil()))->as.number
+	       == length(cons(args, nil()))->as.number);
+	struct env *cl_env = env_make(cl->env, cl->params, args);
+	return eval(cl_env, cl->body);
 }
