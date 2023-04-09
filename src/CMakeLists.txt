@@ -13,7 +13,7 @@ target_link_libraries(context PUBLIC tgc)
 
 find_package(Readline REQUIRED)
 
-add_library(repl repl.c)
+add_library(repl repl.c eval.c core.c)
 target_link_libraries(repl PRIVATE ${Readline_LIBRARY} compiler)
 
 add_executable("${PROJECT_NAME}" main.c)

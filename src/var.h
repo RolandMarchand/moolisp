@@ -54,10 +54,8 @@ struct var *c_functionp(const struct var *);
 struct var *closurep(const struct var *);
 struct var *functionp(const struct var *);
 struct var *not(const struct var *);
-struct var *eq(const struct var *a, const struct var *b);
-struct var *equal(const struct var *a, const struct var *b);
 struct var *nilp(const struct var *);
 struct var *listp(const struct var *);
-struct var *print(const struct var *);
 
 bool _var2bool(const struct var *);
+bool _quotep(const struct var *);

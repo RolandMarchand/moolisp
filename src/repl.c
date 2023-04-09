@@ -1,6 +1,8 @@
 #include "repl.h"
 #include "config.h"
 #include "parser.h"
+#include "eval.h"
+#include "core.c"
 
 extern tgc_t gc;
 
@@ -34,12 +36,14 @@ Copyright (c) 2023 Roland Marchand roland.marchand@protonmail.com\n\n",
 		add_history(input);
 		struct var v = parse(input);
 		struct var *tail = &v;
+		struct env *env = env_make(NULL, nil(), nil());
+		env_set(env, symbol("add"), c_function(add));
 		while (_var2bool(tail)) {
-			print(car(tail));
+			struct var *evaluated = eval(env, car(tail));
+			print(evaluated);
 			printf("\n");
 			tail = cdr(tail);
 		}
 	}
 	printf("Bye!\n");
 }
-

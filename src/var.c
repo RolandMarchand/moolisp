@@ -3,8 +3,6 @@
 extern tgc_t gc;
 
 static struct var *create_var(const struct var *v);
-static bool compare_cons(const struct var *c1, const struct var *c2);
-static void print_list(const struct var *list);
 
 bool _var2bool(const struct var *v)
 {
@@ -144,67 +142,6 @@ struct var *not(const struct var *v)
 	return nil();
 }
 
-struct var *eq(const struct var *a, const struct var *b)
-{
-	assert(a);
-	assert(b);
-	if (a == b) {
-		return t();
-	}
-	return nil();
-}
-
-bool compare_cons(const struct var *c1, const struct var *c2)
-{
-	bool c1_nil = _var2bool(nilp(c1));
-	bool c2_nil = _var2bool(nilp(c2));
-	if ((c1_nil ^ c2_nil) != 0) {
-		return _var2bool(nil());
-	}
-	if (c1_nil) {
-		return _var2bool(t());
-	}
-	return _var2bool(equal(c1->as.cons->x, c2->as.cons->x))
-		&& _var2bool(equal(c1->as.cons->y, c2->as.cons->y));
-}
-
-struct var *equal(const struct var *a, const struct var *b)
-{
-	if (a->type != b->type) {
-		return nil();
-	}
-	if (_var2bool(eq(a, b))) {
-		return t();
-	}
-	bool _equal;
-	switch (a->type) {
-	case VAR_NUMBER:
-		_equal = a->as.number == b->as.number;
-		break;
-	case VAR_STRING:
-		_equal = strcmp(a->as.string, b->as.string) == 0;
-		break;
-	case VAR_C_FUNCTION:
-		_equal = a->as.c_function == b->as.c_function;
-		break;
-	case VAR_CONS:
-		_equal = compare_cons(a, b);
-		break;
-		/* Identity comparison */
-	case VAR_SYMBOL:
-	case VAR_CLOSURE:
-		return nil();
-		break;
-	default:
-		fprintf(stderr, "error: unknown type to compare equality\n");
-		exit(EXIT_FAILURE);
-	}
-	if (_equal) {
-		return t();
-	}
-	return nil();
-}
-
 struct var *atom(const struct var *a)
 {
 	if (a->type != VAR_CONS) {
@@ -266,58 +203,12 @@ struct var *functionp(const struct var *f)
 	return nil();
 }
 
-void print_list(const struct var *list)
+bool _quotep(const struct var *v)
 {
-	assert(_var2bool(listp(list)));
-	printf("(");
-	while (_var2bool(list)) {
-		print(car(list));
-		list = cdr(list);
-		if (_var2bool(nilp(list))) {
-			break;
-		} else {
-			printf(" ");
-			continue;
-		}
+	assert(v);
+	if (v->type != VAR_CONS || car(v)->type != VAR_SYMBOL
+	    || strcmp(car(v)->as.symbol, "quote") != 0) {
+		return false;
 	}
-	printf(")");
-}
-
-struct var *print(const struct var *v)
-{
-	switch (v->type) {
-	case VAR_SYMBOL:
-		printf("%s", v->as.symbol);
-		break;
-	case VAR_NUMBER:
-		printf("%g", v->as.number);
-		break;
-	case VAR_STRING:
-		printf("\"%s\"", v->as.string);
-		break;
-	case VAR_CONS:
-		if (_var2bool(v)
-		    && _var2bool(symbolp(car(v)))
-		    && strcmp(car(v)->as.symbol, "quote") == 0) {
-			printf("'");
-			print(car(cdr(v)));
-			break;
-		}
-		print_list(v);
-		break;
-	case VAR_C_FUNCTION:
-		printf("<SYSTEM-FUNCTION %p>", v->as.c_function);
-		break;
-	case VAR_CLOSURE:
-		printf("<FUNCTION ");
-		print(v->as.closure->params);
-		printf(" ");
-		print(v->as.closure->body);
-		printf(">");
-		break;
-	default:
-		fprintf(stderr, "error: unknown variant type '%d'\n", v->type);
-		exit(EXIT_FAILURE);
-	}
-	return (struct var *)v;
+	return true;
 }
