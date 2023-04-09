@@ -29,12 +29,6 @@ struct var *parse_string(struct token str)
 struct var *parse_quote(struct parser *parser)
 {
 	struct var *next_expr = parse_expression(parser);
-	if (_var2bool(nilp(next_expr))) {
-		fprintf(stderr,
-			"error:%lu: expected expression, received '%s'\n",
-			parser->lexer.input.line,
-			parser->lexer.current_token.lexeme);
-	}
 	return quote(next_expr);
 }
 
