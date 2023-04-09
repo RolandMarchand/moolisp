@@ -18,7 +18,7 @@ struct var *create_var(const struct var *v)
 	return ret;
 }
 
-struct var *c_function(struct var *(*f)(struct var *))
+struct var *c_function(struct var *(*f)(const struct var *))
 {
 	assert(f);
 	return create_var(&(struct var){

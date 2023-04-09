@@ -19,7 +19,7 @@ struct var {
 		char *symbol;
 		double number;
 		struct cons *cons;
-		struct var *(*c_function)(struct var *);
+		struct var *(*c_function)(const struct var *);
 		struct closure *closure;
 	} as;
 };
@@ -43,7 +43,7 @@ struct var *string(const char *string);
 struct var *symbol(const char *symbol);
 struct var *cons(struct var *x, struct var *y);
 struct var *closure(struct env *, struct var *params, struct var *body);
-struct var *c_function(struct var *(*f)(struct var *));
+struct var *c_function(struct var *(*f)(const struct var *));
 struct var *car(const struct var *list);
 struct var *cdr(const struct var *list);
 struct var *atom(const struct var *);
