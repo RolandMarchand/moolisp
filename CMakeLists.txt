@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(moolisp VERSION 0.1.0
+project(moolisp VERSION 0.2.0
   DESCRIPTION "A lisp"
   LANGUAGES C)
+set(PROJECT_NAME_PRETTY "Moolisp")
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

@@ -5,11 +5,12 @@
 #define VERSION_PATCH @PROJECT_VERSION_PATCH@
 #define LICENSE "@LICENSE@"
 #define PROJECT_NAME "@PROJECT_NAME@"
+#define PROJECT_NAME_PRETTY "@PROJECT_NAME_PRETTY@"
 #define HELP "Usage: " PROJECT_NAME " [options] -c <filename>\n\
 \n\
 Options:\n\
   -h, --help\t\tShow this help message and exit\n\
   -r, --repl\t\tEnter REPL mode\n\
   -l, --license\t\tShow the license\n\
-  -v, --verbose\t\tShow the license (unused)\n\
+  -v, --verbose\t\tEnable verbose mode (unused)\n\
   --version\t\tShow the version\n"

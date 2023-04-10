@@ -12,7 +12,6 @@ To build and run Moolisp, you will need:
 
 * A C compiler
 * CMake
-* GNU Readline
 
 ### Building Moolisp
 
@@ -44,18 +43,18 @@ For example, you can evaluate a simple arithmetic expression like
 this:
 
 ```scheme
-🐑λ (+ 1 2)
+🐑 λ (+ 1 2)
 3
 ```
 
 You can also define variables and functions:
 
 ```scheme
-🐑) (define pi 3.14159)
+🐑 λ (define pi 3.14159)
 pi
-🐑) (define square (lambda (x) (* x x)))
+🐑 λ (define square (lambda (x) (* x x)))
 square
-🐑) (square pi)
+🐑 λ (square pi)
 9.86959
 ```
 

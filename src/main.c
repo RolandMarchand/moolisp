@@ -36,7 +36,8 @@ int _main(int argc, char **argv)
 		return EXIT_SUCCESS;
 	}
 	if (context.version) {
-		printf("Moolisp version: %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		printf(PROJECT_NAME_PRETTY ", version %d.%d.%d\n",
+		       VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 		return EXIT_SUCCESS;
 	}
 	if (context.help) {
