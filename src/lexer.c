@@ -77,7 +77,7 @@ void lexer_unknown_token(struct lexer *lexer)
 		goto next_char;
 	}
 	lexer_set_token(lexer, TOKEN_ERROR, from, CURRENT_CHAR_PTR);
-	fprintf(stderr, "error:%lu: unknown token '%s'\n", lexer->input.line,
+	fprintf(stderr, "Error:%lu: unknown token '%s'\n", lexer->input.line,
 		lexer->current_token.lexeme);
 }
 
@@ -122,7 +122,7 @@ void lexer_string(struct lexer *lexer)
 		}
 		if (CURRENT_CHAR == '\0') {
 			lexer_set_token(lexer, TOKEN_ERROR, from, CURRENT_CHAR_PTR);
-			fprintf(stderr, "error:%lu unfinished string\n",
+			fprintf(stderr, "Error:%lu unfinished string\n",
 				lexer->input.line);
 			return;
 		}

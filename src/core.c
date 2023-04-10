@@ -213,7 +213,7 @@ struct var *print(const struct var *v)
 		printf(">");
 		break;
 	default:
-		fprintf(stderr, "error: unknown variant type '%d'\n", v->type);
+		fprintf(stderr, "Error: unknown variant type '%d'\n", v->type);
 		exit(EXIT_FAILURE);
 	}
 	return (struct var *)v;
@@ -315,7 +315,7 @@ struct var *equal(const struct var *list)
 			return nil();
 			break;
 		default:
-			fprintf(stderr, "error: unknown type to compare equality\n");
+			fprintf(stderr, "Error: unknown type to compare equality\n");
 			exit(EXIT_FAILURE);
 		}
 	}

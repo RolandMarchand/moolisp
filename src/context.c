@@ -23,10 +23,15 @@ struct context get_context(int argc, char **argv)
 			   || strcmp(argv[i], "-l") == 0) {
 			RESET(&c);
 			c.license = true;
+		} else if (strcmp(argv[i], "--help") == 0
+			   || strcmp(argv[i], "-h") == 0) {
+			RESET(&c);
+			c.help = true;
 		} else if (strcmp(argv[i], "--verbose") == 0
 			   || strcmp(argv[i], "-v") == 0) {
 			c.verbose = true;
-		} else if (strcmp(argv[i], "--repl") == 0) {
+		} else if (strcmp(argv[i], "--repl") == 0
+			   || strcmp(argv[i], "-r") == 0) {
 			if (c.license || c.version) {
 				continue;
 			}

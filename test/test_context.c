@@ -42,7 +42,6 @@ int main(void)
 	tgc_start(&gc, &dummy);
 	_main();
 	tgc_stop(&gc);
-
 }
 
 void _main(void)

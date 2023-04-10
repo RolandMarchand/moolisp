@@ -62,15 +62,15 @@ struct var *parse_expression(struct parser *parser)
 		exit(EXIT_FAILURE);
 	case TOKEN_RPAREN:
 		fprintf(stderr,
-			"error:%lu: expected expression, received ')'\n",
+			"Error:%lu: expected expression, received ')'\n",
 			parser->lexer.input.line);
 		exit(EXIT_FAILURE);
 	case TOKEN_EOF:
-		fprintf(stderr, "error:%lu: EOF reached\n",
+		fprintf(stderr, "Error:%lu: EOF reached\n",
 			parser->lexer.input.line);
 		exit(EXIT_FAILURE);
 	default:
-		fprintf(stderr, "error:%lu: unexpected token '%s'\n",
+		fprintf(stderr, "Error:%lu: unexpected token '%s'\n",
 			parser->lexer.input.line,
 			parser->lexer.current_token.lexeme);
 		exit(EXIT_FAILURE);

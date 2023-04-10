@@ -23,7 +23,7 @@ struct var *eval(struct env *env, struct var *ast)
 	case VAR_CONS:
 		return eval_list(env, ast);
 	default:
-		fprintf(stderr, "error: unknown variant type '%d'\n",ast->type);
+		fprintf(stderr, "Error: unknown variant type '%d'\n",ast->type);
 		exit(EXIT_FAILURE);
 	}
 }

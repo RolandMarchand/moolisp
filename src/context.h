@@ -10,6 +10,7 @@ struct context {
 	char *error;
 	char *error_arg;
 	int source_count;
+	bool help;
 	bool repl;
 	bool license;
 	bool version;
