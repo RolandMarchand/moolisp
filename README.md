@@ -1,6 +1,9 @@
 # Moolisp
 
-Moolisp is a simple Lisp-like language implemented in C. It is a project created as part of the "Make a Lisp" challenge, which challenges participants to create their own Lisp interpreter in any language.
+Moolisp is a simple Lisp-like language implemented in C. It is a
+project created as part of the "Make a Lisp" challenge, which
+challenges participants to create their own Lisp interpreter in any
+language.
 
 ## Getting Started
 ### Prerequisites
@@ -24,42 +27,56 @@ cd build &&
 make
 ```
 
-This will compile the `moolisp` executable. You can then run Moolisp with:
+This will compile the `moolisp` executable. You can then run Moolisp
+with:
 
 ```bash
-./moolisp
+./src/moolisp
 ```
 
 ### Using Moolisp
 
-Moolisp supports a subset of Lisp syntax, including lists, symbols, and basic arithmetic. You can interact with the Moolisp interpreter by entering expressions at the prompt.
+Moolisp supports a subset of Lisp syntax, including lists, symbols,
+and basic arithmetic. You can interact with the Moolisp interpreter by
+entering expressions at the prompt.
 
-For example, you can evaluate a simple arithmetic expression like this:
+For example, you can evaluate a simple arithmetic expression like
+this:
 
-```
-> (+ 1 2)
+```scheme
+🐑) (+ 1 2)
 3
 ```
 
 You can also define variables and functions:
 
-```lua
-> (define pi 3.14159)
-nil
-> (define (square x) (* x x))
-nil
-> (square pi)
-9.869587728
+```scheme
+🐑) (define pi 3.14159)
+pi
+🐑) (define square (lambda (x) (* x x)))
+square
+🐑) (square pi)
+9.86959
 ```
 
-For more information on using Moolisp, see the included docs directory.
+For more information on using Moolisp, see the included docs
+directory.
 
 ## Contributing
 
-Moolisp is an open-source project, and contributions are welcome! If you find a bug, have an idea for a new feature, or just want to contribute to the project, please open an issue or submit a pull request on GitHub.
+Moolisp is an open-source project, and contributions are welcome! If
+you find a bug, have an idea for a new feature, or just want to
+contribute to the project, please open an issue or submit a pull
+request on GitHub.
 
 ## License
 
-This software is licensed under the GNU General Public License v3.0 (GPLv3). You may use, distribute, and modify this software in accordance with the terms and conditions of the GPLv3. A copy of the license can be found in the LICENSE file included with this software.
+This software is licensed under the GNU General Public License v3.0
+(GPLv3). You may use, distribute, and modify this software in
+accordance with the terms and conditions of the GPLv3. A copy of the
+license can be found in the LICENSE file included with this software.
 
-Please note that by using, distributing, or modifying this software, you are agreeing to be bound by the terms and conditions of the GPLv3. If you do not agree with these terms and conditions, you may not use, distribute, or modify this software.
+Please note that by using, distributing, or modifying this software,
+you are agreeing to be bound by the terms and conditions of the
+GPLv3. If you do not agree with these terms and conditions, you may
+not use, distribute, or modify this software.
