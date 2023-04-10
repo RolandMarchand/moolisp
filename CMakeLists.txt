@@ -18,6 +18,11 @@ include_directories(
   "${PROJECT_BINARY_DIR}/src"
 )
 
+file(STRINGS "${CMAKE_SOURCE_DIR}/LICENSE" LICENSE)
+string(REPLACE ";" "\\n" LICENSE "${LICENSE}")
+string(REPLACE "\"" "\\\"" LICENSE "${LICENSE}")
+string(APPEND LICENSE "\\n")
+
 configure_file(
     "${PROJECT_SOURCE_DIR}/src/config.h.in"
     "${PROJECT_BINARY_DIR}/src/config.h"

@@ -8,3 +8,4 @@
 #include <assert.h>
 
 #include "tgc/tgc.h"
+#include "config.h"

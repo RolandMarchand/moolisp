@@ -3,3 +3,13 @@
 #define VERSION_MAJOR @PROJECT_VERSION_MAJOR@
 #define VERSION_MINOR @PROJECT_VERSION_MINOR@
 #define VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define LICENSE "@LICENSE@"
+#define PROJECT_NAME "@PROJECT_NAME@"
+#define HELP "Usage: " PROJECT_NAME " [options] -c <filename>\n\
+\n\
+Options:\n\
+  -h, --help\t\tShow this help message and exit\n\
+  -r, --repl\t\tEnter REPL mode\n\
+  -l, --license\t\tShow the license\n\
+  -v, --verbose\t\tShow the license (unused)\n\
+  --version\t\tShow the version\n"
