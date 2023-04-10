@@ -43,18 +43,18 @@ For example, you can evaluate a simple arithmetic expression like
 this:
 
 ```scheme
-🐑 λ (+ 1 2)
+ > (+ 1 2)
 3
 ```
 
 You can also define variables and functions:
 
 ```scheme
-🐑 λ (define pi 3.14159)
+ > (define pi 3.14159)
 pi
-🐑 λ (define square (lambda (x) (* x x)))
+ > (define square (lambda (x) (* x x)))
 square
-🐑 λ (square pi)
+ > (square pi)
 9.86959
 ```
 
