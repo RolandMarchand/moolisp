@@ -11,10 +11,8 @@ target_link_libraries(structures PUBLIC tgc)
 add_library(context context.c)
 target_link_libraries(context PUBLIC tgc)
 
-find_package(Readline REQUIRED)
-
 add_library(repl repl.c eval.c core.c)
-target_link_libraries(repl PRIVATE ${Readline_LIBRARY} compiler)
+target_link_libraries(repl PRIVATE linenoise compiler)
 
 add_executable("${PROJECT_NAME}" main.c)
 target_link_libraries("${PROJECT_NAME}" PRIVATE

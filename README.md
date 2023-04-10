@@ -44,7 +44,7 @@ For example, you can evaluate a simple arithmetic expression like
 this:
 
 ```scheme
-🐑) (+ 1 2)
+🐑λ (+ 1 2)
 3
 ```
 
@@ -71,12 +71,16 @@ request on GitHub.
 
 ## License
 
-This software is licensed under the GNU General Public License v3.0
-(GPLv3). You may use, distribute, and modify this software in
-accordance with the terms and conditions of the GPLv3. A copy of the
-license can be found in the LICENSE file included with this software.
+Copyright (C) 2023 by Roland Marchand <roland.marchand@protonmail.com>
 
-Please note that by using, distributing, or modifying this software,
-you are agreeing to be bound by the terms and conditions of the
-GPLv3. If you do not agree with these terms and conditions, you may
-not use, distribute, or modify this software.
+Permission to use, copy, modify, and/or distribute this software for
+any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE
+AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.

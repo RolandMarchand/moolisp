@@ -1,8 +1,9 @@
 #include "repl.h"
-#include "config.h"
+#include "common.h"
 #include "parser.h"
 #include "eval.h"
-#include "core.c"
+#include "core.h"
+#include "linenoise/linenoise.h"
 
 extern tgc_t gc;
 /* Replace manually allocated string with a garbage collected one */
@@ -25,7 +26,6 @@ void repl() {
 <https://github.com/RolandMarchand/moolisp>\n\
 Copyright (c) 2023 Roland Marchand roland.marchand@protonmail.com\n\n",
 	       VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-	rl_bind_key('\t', rl_insert);
 	char *input;
 	struct env *env = env_make(NULL, nil(), nil());
 
@@ -46,7 +46,7 @@ Copyright (c) 2023 Roland Marchand roland.marchand@protonmail.com\n\n",
 	env_set(env, symbol("cdr"), c_function(curried_cdr));
 	env_set(env, symbol("apply"), c_function(curried_apply));
 	env_set(env, symbol("print"), c_function(curried_print));
-	while ((input = readline("🐑) ")) != NULL) {
+	while ((input = linenoise("🐑 λ ")) != NULL) {
 		input = tgc_replace_str(&gc, input);
 		if (!input) {
 			break;
@@ -54,7 +54,7 @@ Copyright (c) 2023 Roland Marchand roland.marchand@protonmail.com\n\n",
 		if (!*input) {
 			continue;
 		}
-		add_history(input);
+		linenoiseHistoryAdd(input);
 		struct var v = parse(input);
 		struct var *tail = &v;
 		while (_var2bool(tail)) {
