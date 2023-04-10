@@ -4,6 +4,18 @@
 static void print_list(const struct var *list);
 static bool compare_cons(const struct var *c1, const struct var *c2);
 
+struct var *begin(struct env *env, const struct var *list)
+{
+	assert(list);
+	assert(_var2bool(listp(list)));
+	struct var *ret = (struct var *)list;
+	while (_var2bool(list)) {
+		ret = eval(env, car(list));
+		list = cdr(list);
+	}
+	return ret;
+}
+
 struct var *curried_car(const struct var *list)
 {
 	assert(list);
@@ -23,7 +35,7 @@ struct var *curried_cdr(const struct var *list)
 struct var *curried_cons(const struct var *list)
 {
 	assert(list);
-	assert(length(cons((struct var *)list, nil()))->as.number == 2);
+	assert(length((struct var *)list)->as.number == 2);
 	return cons(car(list), car(cdr(list)));
 }
 
@@ -150,14 +162,23 @@ struct var *greater_equal(const struct var *list)
 {
 	assert(list);
 	assert(listp(list));
-	return !_var2bool(cdr(cdr(list))) ? t() : nilp(lesser_than(list));
+	return !_var2bool(car(cdr(list))) ? t() : nilp(lesser_than(list));
 }
 
 struct var *lesser_equal(const struct var *list)
 {
 	assert(list);
 	assert(listp(list));
-	return !_var2bool(cdr(cdr(list))) ? t() : nilp(greater_than(list));
+	return !_var2bool(car(cdr(list))) ? t() : nilp(greater_than(list));
+}
+
+struct var *curried_print(const struct var *list)
+{
+	assert(list);
+	assert(_var2bool(listp(list)));
+	struct var *v = print(car(list));
+	printf("\n");
+	return v;
 }
 
 struct var *print(const struct var *v)
@@ -301,12 +322,19 @@ struct var *equal(const struct var *list)
 	return t();
 }
 
-struct var *length(const struct var *list)
+struct var *curried_length(const struct var *list)
 {
 	assert(list);
 	assert(_var2bool(listp(list)));
 	assert(!_var2bool(cdr(list)));
 	list = car(list);
+	return length(list);
+}
+
+struct var *length(const struct var *list)
+{
+	assert(list);
+	assert(_var2bool(listp(list)));
 
 	size_t len = 0;
 	while (_var2bool(list)) {
@@ -327,8 +355,12 @@ struct var *apply(const struct var *list)
 	}
 	struct closure *cl = car(list)->as.closure;
 	struct var *args = cdr(list);
-	assert(length(cons(cl->params, nil()))->as.number
-	       == length(cons(args, nil()))->as.number);
+	assert(length(cl->params)->as.number
+	       == length(args)->as.number);
 	struct env *cl_env = env_make(cl->env, cl->params, args);
 	return eval(cl_env, cl->body);
+}
+struct var *curried_apply(const struct var *list)
+{
+	return apply(cons(car(list), car(cdr(list))));
 }

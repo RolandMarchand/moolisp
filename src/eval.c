@@ -23,7 +23,7 @@ struct var *eval(struct env *env, struct var *ast)
 	case VAR_CONS:
 		return eval_list(env, ast);
 	default:
-		fprintf(stderr, "error: unknown variant type '%d'\n", ast->type);
+		fprintf(stderr, "error: unknown variant type '%d'\n",ast->type);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -44,14 +44,33 @@ struct var *eval_list(struct env *env, struct var *list)
 	}
 	if (_var2bool(symbolp(car(list)))) {
 		if (strcmp(car(list)->as.symbol, "lambda") == 0) {
-			assert(length(cons(cdr(list), nil()))->as.number == 2);
-			return closure(env, car(cdr(list)), car(cdr(cdr(list))));
+			assert(length(cdr(list))->as.number == 2);
+			return closure(env, car(cdr(list)),
+				       car(cdr(cdr(list))));
 		}
 		if (strcmp(car(list)->as.symbol, "define") == 0) {
-			assert(length(cons(cdr(list), nil()))->as.number == 2);
+			assert(length(cdr(list))->as.number == 2);
 			assert(_var2bool(symbolp(car(cdr(list)))));
-			env_set(env, car(cdr(list)), eval(env, car(cdr(cdr(list)))));
+			env_set(env, car(cdr(list)),
+				eval(env, car(cdr(cdr(list)))));
 			return car(cdr(list));
+		}
+		if (strcmp(car(list)->as.symbol, "if") == 0) {
+			size_t expr_len = length(cdr(list))->as.number;
+			assert(expr_len >= 2 && expr_len <= 3);
+			struct var *_test = car(cdr(list));
+			struct var *_then = car(cdr(cdr(list)));
+			struct var *_else = car(cdr(cdr(cdr(list))));
+			if (_var2bool(eval(env, _test))) {
+				return eval(env, _then);
+			}
+			return eval(env, _else);
+		}
+		if (strcmp(car(list)->as.symbol, "begin") == 0) {
+			return begin(env, cdr(list));
+		}
+		if (strcmp(car(list)->as.symbol, "eval") == 0) {
+			return eval(env, eval(env, car(cdr(list))));
 		}
 	}
 	/* TODO: handle and, or, cond short-circuiting */

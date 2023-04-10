@@ -5,7 +5,6 @@
 #include "core.c"
 
 extern tgc_t gc;
-
 /* Replace manually allocated string with a garbage collected one */
 static char *tgc_replace_str(tgc_t *gc, char *str);
 
@@ -29,6 +28,7 @@ Copyright (c) 2023 Roland Marchand roland.marchand@protonmail.com\n\n",
 	rl_bind_key('\t', rl_insert);
 	char *input;
 	struct env *env = env_make(NULL, nil(), nil());
+
 	env_set(env, symbol("+"), c_function(add));
 	env_set(env, symbol("-"), c_function(substract));
 	env_set(env, symbol("*"), c_function(multiply));
@@ -40,14 +40,19 @@ Copyright (c) 2023 Roland Marchand roland.marchand@protonmail.com\n\n",
 	env_set(env, symbol(">="), c_function(greater_equal));
 	env_set(env, symbol("eq"), c_function(eq));
 	env_set(env, symbol("equal"), c_function(equal));
-	env_set(env, symbol("length"), c_function(length));
+	env_set(env, symbol("length"), c_function(curried_length));
 	env_set(env, symbol("cons"), c_function(curried_cons));
 	env_set(env, symbol("car"), c_function(curried_car));
 	env_set(env, symbol("cdr"), c_function(curried_cdr));
+	env_set(env, symbol("apply"), c_function(curried_apply));
+	env_set(env, symbol("print"), c_function(curried_print));
 	while ((input = readline("🐑) ")) != NULL) {
 		input = tgc_replace_str(&gc, input);
-		if (!input || !*input) {
+		if (!input) {
 			break;
+		}
+		if (!*input) {
+			continue;
 		}
 		add_history(input);
 		struct var v = parse(input);

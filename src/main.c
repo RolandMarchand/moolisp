@@ -23,7 +23,8 @@ int _main(int argc, char **argv)
 {
 	struct context context = get_context(argc, argv);
 	if (context.error) {
-		if (context.error_arg) {			fprintf(stderr, "error: %s '%s'\n",
+		if (context.error_arg) {
+			fprintf(stderr, "error: %s '%s'\n",
 				context.error, context.error_arg);
 			return EXIT_FAILURE;
 		}
